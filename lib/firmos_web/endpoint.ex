@@ -50,6 +50,9 @@ defmodule FirmosWeb.Endpoint do
 
   plug Plug.MethodOverride
   plug Plug.Head
+  # Published sites (`<slug>.<sites_base_domain>`) are answered here and
+  # halted, before the session: they never get the app's cookie or routes.
+  plug FirmosWeb.Plugs.SiteHost
   plug Plug.Session, @session_options
   plug FirmosWeb.Router
 end

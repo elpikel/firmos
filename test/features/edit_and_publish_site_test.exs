@@ -74,7 +74,6 @@ defmodule FirmosWeb.Features.EditAndPublishSiteTest do
   # ---------------------------------------------------------------------
 
   describe "Scenario: AC1 — the owner changes the hero headline and saves" do
-    @describetag :skip
     setup :register_and_log_in_user
 
     setup %{conn: conn, scope: scope} do
@@ -118,7 +117,6 @@ defmodule FirmosWeb.Features.EditAndPublishSiteTest do
   end
 
   describe "Scenario: AC1 — the website section links to the editor" do
-    @describetag :skip
     setup :register_and_log_in_user
 
     setup %{conn: conn, scope: scope} do
@@ -134,7 +132,6 @@ defmodule FirmosWeb.Features.EditAndPublishSiteTest do
   end
 
   describe "Scenario: AC2 — the owner sets the slug and publishes" do
-    @describetag :skip
     setup :register_and_log_in_user
 
     setup %{conn: conn, scope: scope} do
@@ -182,7 +179,6 @@ defmodule FirmosWeb.Features.EditAndPublishSiteTest do
   end
 
   describe "Scenario: AC2 — draft edits after publishing wait for a republish" do
-    @describetag :skip
     setup :register_and_log_in_user
 
     setup %{conn: conn, scope: scope} do
@@ -215,8 +211,6 @@ defmodule FirmosWeb.Features.EditAndPublishSiteTest do
   end
 
   describe "Scenario: AC2 — the app keeps its own hosts" do
-    @describetag :skip
-
     setup do
       published_company(user_scope_fixture(), "piekarnia")
       %{bare: visit("localhost"), www: visit("www.localhost")}
@@ -232,7 +226,6 @@ defmodule FirmosWeb.Features.EditAndPublishSiteTest do
   end
 
   describe "Scenario: AC3 — the owner opens the activity log after publishing" do
-    @describetag :skip
     setup :register_and_log_in_user
 
     setup %{conn: conn, scope: scope} do
@@ -257,8 +250,6 @@ defmodule FirmosWeb.Features.EditAndPublishSiteTest do
   # ---------------------------------------------------------------------
 
   describe "Scenario: AC4 — rejecting a customer on a site that was never published" do
-    @describetag :skip
-
     setup do
       scope = user_scope_fixture()
       company = company_with_draft(scope)
@@ -273,8 +264,6 @@ defmodule FirmosWeb.Features.EditAndPublishSiteTest do
   end
 
   describe "Scenario: AC4 — rejecting a customer on an unknown slug" do
-    @describetag :skip
-
     setup do
       %{public: visit("nieznana.localhost")}
     end
@@ -285,8 +274,6 @@ defmodule FirmosWeb.Features.EditAndPublishSiteTest do
   end
 
   describe "Scenario: AC4 — rejecting a non-GET request on a public site" do
-    @describetag :skip
-
     setup do
       published_company(user_scope_fixture(), "piekarnia")
       %{public: visit("piekarnia.localhost", :post)}
@@ -298,7 +285,6 @@ defmodule FirmosWeb.Features.EditAndPublishSiteTest do
   end
 
   describe "Scenario: AC5 — rejecting a slug another company already uses" do
-    @describetag :skip
     setup :register_and_log_in_user
 
     setup %{conn: conn, scope: scope} do
@@ -320,8 +306,6 @@ defmodule FirmosWeb.Features.EditAndPublishSiteTest do
   end
 
   describe "Scenario: AC5 — rejecting a slug taken in another letter case" do
-    @describetag :skip
-
     setup do
       published_company(user_scope_fixture(), "piekarnia")
       scope = user_scope_fixture()
@@ -336,7 +320,6 @@ defmodule FirmosWeb.Features.EditAndPublishSiteTest do
   end
 
   describe "Scenario: AC5 — rejecting a reserved slug" do
-    @describetag :skip
     setup :register_and_log_in_user
 
     setup %{conn: conn, scope: scope} do
@@ -344,7 +327,11 @@ defmodule FirmosWeb.Features.EditAndPublishSiteTest do
       {:ok, view, _html} = live(conn, ~p"/companies/#{company.id}/site")
       view |> form("#site-slug-form", site: %{slug: "www"}) |> render_submit()
 
-      %{site: Sites.get_site(scope, company)}
+      %{view: view, site: Sites.get_site(scope, company)}
+    end
+
+    test "shows a \"reserved\" error", %{view: view} do
+      assert has_element?(view, "#site-slug-form", "jest zarezerwowane")
     end
 
     test "keeps the slug unset", %{site: site} do
@@ -353,7 +340,6 @@ defmodule FirmosWeb.Features.EditAndPublishSiteTest do
   end
 
   describe "Scenario: rejecting publish without a slug" do
-    @describetag :skip
     setup :register_and_log_in_user
 
     setup %{conn: conn, scope: scope} do
@@ -361,7 +347,11 @@ defmodule FirmosWeb.Features.EditAndPublishSiteTest do
       {:ok, view, _html} = live(conn, ~p"/companies/#{company.id}/site")
       view |> element("#site-publish") |> render_click()
 
-      %{site: Sites.get_site(scope, company)}
+      %{view: view, site: Sites.get_site(scope, company)}
+    end
+
+    test "asks for the address first", %{view: view} do
+      assert has_element?(view, "#flash-error", "Przed publikacją wybierz adres strony.")
     end
 
     test "keeps the site a draft", %{site: site} do
@@ -370,7 +360,6 @@ defmodule FirmosWeb.Features.EditAndPublishSiteTest do
   end
 
   describe "Scenario: rejecting script in the edited content on the public page" do
-    @describetag :skip
     setup :register_and_log_in_user
 
     setup %{conn: conn, scope: scope} do
@@ -382,13 +371,16 @@ defmodule FirmosWeb.Features.EditAndPublishSiteTest do
       %{public: document(visit("piekarnia.localhost"))}
     end
 
-    test "renders the markup as text", %{public: public} do
+    test "adds no script element", %{public: public} do
       assert public |> LazyHTML.query("#site-hero script") |> Enum.empty?()
+    end
+
+    test "shows the markup as text", %{public: public} do
+      assert text_of(public, "#site-hero h1") =~ "<script>alert(1)</script>"
     end
   end
 
   describe "Scenario: rejecting another owner's site editor" do
-    @describetag :skip
     setup :register_and_log_in_user
 
     setup do
@@ -403,8 +395,6 @@ defmodule FirmosWeb.Features.EditAndPublishSiteTest do
   end
 
   describe "Scenario: rejecting changes to another owner's site" do
-    @describetag :skip
-
     setup do
       other_scope = user_scope_fixture()
       other_site = Sites.get_site(other_scope, company_with_draft(other_scope))

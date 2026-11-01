@@ -51,6 +51,7 @@ defmodule FirmosWeb.Router do
       live "/companies/:id/activity", CompanyLive.Activity, :index
       live "/companies/:id/plan", CompanyLive.Plan, :show
       live "/companies/:id/site", CompanyLive.Site, :show
+      live "/companies/:id/site/edit", CompanyLive.SiteEdit, :edit
       live "/users/settings", UserLive.Settings, :edit
       live "/users/settings/confirm-email/:token", UserLive.Settings, :confirm_email
     end

@@ -12,14 +12,17 @@ defmodule Firmos.Sites.Site do
   `idle` → `pending` → `generating` → `idle` (a version was stored) or
   `failed` (with a safe `generation_error` code; the owner can try again).
 
-  Every field is set by `Firmos.Sites`, never cast from user params; the
-  changesets here only validate and map the database constraints to errors.
+  Every field but the slug is set by `Firmos.Sites`, never cast from user
+  params; the slug is the owner's choice, normalized and checked against
+  `Firmos.Sites.Slug` by `slug_changeset/2`. The changesets also map the
+  database constraints to errors.
   """
   use Ecto.Schema
 
   import Ecto.Changeset
 
   alias Firmos.Companies.Company
+  alias Firmos.Sites.Slug
   alias Firmos.Sites.Version
 
   @type status :: :draft | :published
@@ -84,13 +87,58 @@ defmodule Firmos.Sites.Site do
     |> check_constraint(:generation_error, name: :sites_generation_error_only_when_failed)
   end
 
-  @doc "Points the site at its new current `version` and ends the generation."
+  @doc "Points the site at its new generated `version` and ends the generation."
   @spec current_version_changeset(t(), Version.t()) :: Ecto.Changeset.t()
-  def current_version_changeset(site, %Version{id: version_id}) do
+  def current_version_changeset(site, %Version{} = version) do
     site
-    |> change(current_version_id: version_id, generation_status: :idle, generation_error: nil)
-    |> foreign_key_constraint(:current_version_id, name: :sites_current_version_id_fkey)
+    |> current_version_pointer_changeset(version)
+    |> change(generation_status: :idle, generation_error: nil)
     |> check_constraint(:generation_error, name: :sites_generation_error_only_when_failed)
+  end
+
+  @doc """
+  Points the site at its new current `version` (an owner's edit), leaving
+  the generation status alone.
+  """
+  @spec current_version_pointer_changeset(t(), Version.t()) :: Ecto.Changeset.t()
+  def current_version_pointer_changeset(site, %Version{id: version_id}) do
+    site
+    |> change(current_version_id: version_id)
+    |> foreign_key_constraint(:current_version_id, name: :sites_current_version_id_fkey)
+  end
+
+  @doc """
+  The owner's slug (`attrs["slug"]`): trimmed and downcased, then checked
+  for the format, the length and the reserved names. A slug another site
+  holds (in any letter case: the column is citext) is "slug already taken".
+  """
+  @spec slug_changeset(t(), map()) :: Ecto.Changeset.t()
+  def slug_changeset(site, attrs) do
+    site
+    |> cast(attrs, [:slug])
+    |> update_change(:slug, &Slug.normalize/1)
+    |> validate_required([:slug])
+    |> validate_length(:slug, min: Slug.min_length(), max: Slug.max_length())
+    |> validate_slug_format()
+    |> validate_exclusion(:slug, Slug.reserved())
+    |> validate_change(:slug, fn :slug, slug ->
+      if Slug.punycode?(slug), do: [slug: "can't start with xn--"], else: []
+    end)
+    |> unique_constraint(:slug, message: "slug already taken")
+    |> check_constraint(:slug, name: :sites_slug_format)
+  end
+
+  @doc """
+  Publishes the current version: customers see it at the slug's address.
+  Needs a slug and a current version.
+  """
+  @spec publish_changeset(t()) :: Ecto.Changeset.t()
+  def publish_changeset(%__MODULE__{current_version_id: version_id} = site) do
+    site
+    |> change(status: :published, published_version_id: version_id)
+    |> validate_required([:slug, :published_version_id])
+    |> foreign_key_constraint(:published_version_id, name: :sites_published_version_id_fkey)
+    |> check_constraint(:status, name: :sites_published_has_version)
   end
 
   @doc "Marks the generation failed with a short, safe `code`."
@@ -101,5 +149,17 @@ defmodule Firmos.Sites.Site do
     |> validate_length(:generation_error, max: 100)
     |> check_constraint(:generation_error, name: :sites_generation_error_only_when_failed)
     |> check_constraint(:generation_error, name: :sites_generation_error_length)
+  end
+
+  # Skipped after a length error: the format regex also rejects short and
+  # long slugs, and one error says more than two.
+  defp validate_slug_format(changeset) do
+    if Keyword.has_key?(changeset.errors, :slug) do
+      changeset
+    else
+      validate_format(changeset, :slug, Slug.format(),
+        message: "may only contain lowercase letters, digits and hyphens, not at the start or end"
+      )
+    end
   end
 end

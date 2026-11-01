@@ -135,3 +135,13 @@ msgstr[2] "jest za długi, maksymalnie %{count} znaków"
 
 msgid "contains characters that are not allowed"
 msgstr "zawiera niedozwolone znaki"
+
+## From Firmos.Sites.Site.slug_changeset/2 (custom messages)
+msgid "slug already taken"
+msgstr "ten adres jest już zajęty"
+
+msgid "may only contain lowercase letters, digits and hyphens, not at the start or end"
+msgstr "może zawierać tylko małe litery, cyfry i myślniki (nie na początku ani na końcu)"
+
+msgid "can't start with xn--"
+msgstr "nie może zaczynać się od xn--"

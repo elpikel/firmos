@@ -26,7 +26,7 @@ msgstr "Próba ponownego połączenia"
 #: lib/firmos_web/live/company_live/activity.ex:60
 #: lib/firmos_web/live/company_live/plan.ex:144
 #: lib/firmos_web/live/company_live/profile.ex:60
-#: lib/firmos_web/live/company_live/site.ex:99
+#: lib/firmos_web/live/company_live/site.ex:155
 #: lib/firmos_web/live/dashboard_live.ex:28
 #: lib/firmos_web/live/dashboard_live.ex:108
 #, elixir-autogen, elixir-format
@@ -264,6 +264,8 @@ msgid "Save Password"
 msgstr "Zapisz hasło"
 
 #: lib/firmos_web/live/company_live/profile.ex:100
+#: lib/firmos_web/live/company_live/site.ex:372
+#: lib/firmos_web/live/company_live/site_edit.ex:191
 #: lib/firmos_web/live/home_live.ex:64
 #: lib/firmos_web/live/user_live/settings.ex:66
 #, elixir-autogen, elixir-format
@@ -412,6 +414,7 @@ msgid "My company"
 msgstr "Moja firma"
 
 #: lib/firmos_web/live/company_live/profile.ex:102
+#: lib/firmos_web/live/company_live/site_edit.ex:195
 #, elixir-autogen, elixir-format
 msgid "Save"
 msgstr "Zapisz"
@@ -588,6 +591,7 @@ msgid "Not useful"
 msgstr "Nieprzydatny"
 
 #: lib/firmos_web/live/company_live/plan.ex:230
+#: lib/firmos_web/live/company_live/site_edit.ex:136
 #, elixir-autogen, elixir-format
 msgid "Offer"
 msgstr "Oferta"
@@ -603,6 +607,7 @@ msgid "Preparing your business plan..."
 msgstr "Przygotowujemy Twój biznesplan..."
 
 #: lib/firmos_web/live/company_live/plan.ex:248
+#: lib/firmos_web/live/company_live/site_edit.ex:149
 #, elixir-autogen, elixir-format
 msgid "Pricing"
 msgstr "Ceny"
@@ -624,8 +629,8 @@ msgstr "Zlecono wersję %{version} biznesplanu."
 
 #: lib/firmos_web/live/company_live/plan.ex:172
 #: lib/firmos_web/live/company_live/plan.ex:221
-#: lib/firmos_web/live/company_live/site.ex:119
-#: lib/firmos_web/live/company_live/site.ex:192
+#: lib/firmos_web/live/company_live/site.ex:175
+#: lib/firmos_web/live/company_live/site.ex:248
 #, elixir-autogen, elixir-format
 msgid "Starting..."
 msgstr "Uruchamiam..."
@@ -646,13 +651,13 @@ msgid "This plan can't be retried right now."
 msgstr "Tego planu nie można teraz ponowić."
 
 #: lib/firmos_web/live/company_live/plan.ex:341
-#: lib/firmos_web/live/company_live/site.ex:162
+#: lib/firmos_web/live/company_live/site.ex:218
 #, elixir-autogen, elixir-format
 msgid "This usually takes a minute or two. The page updates by itself when it's ready."
 msgstr "Zwykle trwa to minutę lub dwie. Strona odświeży się sama, gdy plan będzie gotowy."
 
 #: lib/firmos_web/live/company_live/plan.ex:225
-#: lib/firmos_web/live/company_live/site.ex:196
+#: lib/firmos_web/live/company_live/site.ex:252
 #, elixir-autogen, elixir-format
 msgid "Try again"
 msgstr "Spróbuj ponownie"
@@ -712,7 +717,7 @@ msgstr "v%{version}"
 msgid "version %{version}"
 msgstr "wersja %{version}"
 
-#: lib/firmos_web/live/company_live/site.ex:50
+#: lib/firmos_web/live/company_live/site.ex:52
 #, elixir-autogen, elixir-format
 msgid "A website is already being generated."
 msgstr "Strona jest już generowana."
@@ -722,17 +727,17 @@ msgstr "Strona jest już generowana."
 msgid "Back to website"
 msgstr "Wróć do strony"
 
-#: lib/firmos_web/live/company_live/site.ex:53
+#: lib/firmos_web/live/company_live/site.ex:55
 #, elixir-autogen, elixir-format
 msgid "Could not start generating your website."
 msgstr "Nie udało się rozpocząć generowania strony."
 
-#: lib/firmos_web/live/company_live/site.ex:124
+#: lib/firmos_web/live/company_live/site.ex:180
 #, elixir-autogen, elixir-format
 msgid "Create website"
 msgstr "Utwórz stronę"
 
-#: lib/firmos_web/live/company_live/site.ex:207
+#: lib/firmos_web/live/company_live/site.ex:263
 #, elixir-autogen, elixir-format
 msgid "Draft"
 msgstr "Wersja robocza"
@@ -747,12 +752,12 @@ msgstr "Podgląd wersji roboczej. Tak klienci zobaczą Twoją stronę."
 msgid "Edited the website."
 msgstr "Edytowano stronę."
 
-#: lib/firmos_web/live/company_live/site.ex:120
+#: lib/firmos_web/live/company_live/site.ex:176
 #, elixir-autogen, elixir-format
 msgid "Generate a new draft? The current one will be kept."
 msgstr "Wygenerować nową wersję roboczą? Obecna zostanie zachowana."
 
-#: lib/firmos_web/live/company_live/site.ex:47
+#: lib/firmos_web/live/company_live/site.ex:49
 #, elixir-autogen, elixir-format
 msgid "Generate your business plan first."
 msgstr "Najpierw wygeneruj biznesplan."
@@ -767,22 +772,22 @@ msgstr "Wygenerowano wersję roboczą strony."
 msgid "Generated version %{version} of the website."
 msgstr "Wygenerowano wersję %{version} strony."
 
-#: lib/firmos_web/live/company_live/site.ex:142
+#: lib/firmos_web/live/company_live/site.ex:198
 #, elixir-autogen, elixir-format
 msgid "Go to the business plan"
 msgstr "Przejdź do biznesplanu"
 
-#: lib/firmos_web/live/company_live/site.ex:216
+#: lib/firmos_web/live/company_live/site.ex:272
 #, elixir-autogen, elixir-format
 msgid "Hero, offer, pricing and contact sections are ready."
 msgstr "Sekcje powitalna, oferta, cennik i kontakt są gotowe."
 
-#: lib/firmos_web/live/company_live/site.ex:240
+#: lib/firmos_web/live/company_live/site.ex:396
 #, elixir-autogen, elixir-format
 msgid "No website yet. Create one and AI will write a landing page from your business plan."
 msgstr "Nie masz jeszcze strony. Utwórz ją, a AI napisze stronę na podstawie Twojego biznesplanu."
 
-#: lib/firmos_web/live/company_live/site.ex:226
+#: lib/firmos_web/live/company_live/site.ex:291
 #, elixir-autogen, elixir-format
 msgid "Preview"
 msgstr "Podgląd"
@@ -802,7 +807,7 @@ msgstr "Opublikowano stronę."
 msgid "Published version %{version} of the website."
 msgstr "Opublikowano wersję %{version} strony."
 
-#: lib/firmos_web/live/company_live/site.ex:124
+#: lib/firmos_web/live/company_live/site.ex:180
 #, elixir-autogen, elixir-format
 msgid "Regenerate website"
 msgstr "Wygeneruj stronę ponownie"
@@ -817,7 +822,7 @@ msgstr "Przywrócono stronę jako wersję %{version}."
 msgid "Saved version %{version} of the website."
 msgstr "Zapisano wersję %{version} strony."
 
-#: lib/firmos_web/live/company_live/site.ex:182
+#: lib/firmos_web/live/company_live/site.ex:238
 #, elixir-autogen, elixir-format
 msgid "The AI service didn't deliver a usable website. Nothing was saved. Please try again."
 msgstr "Usługa AI nie dostarczyła poprawnej strony. Nic nie zostało zapisane. Spróbuj ponownie."
@@ -832,14 +837,15 @@ msgstr "Nie ma jeszcze wersji roboczej strony do podglądu."
 msgid "Undid a website change."
 msgstr "Cofnięto zmianę strony."
 
-#: lib/firmos_web/live/company_live/site.ex:179
+#: lib/firmos_web/live/company_live/site.ex:235
 #, elixir-autogen, elixir-format
 msgid "We couldn't generate your website"
 msgstr "Nie udało się wygenerować strony"
 
 #: lib/firmos_web/live/company_live/plan.ex:165
-#: lib/firmos_web/live/company_live/site.ex:32
-#: lib/firmos_web/live/company_live/site.ex:104
+#: lib/firmos_web/live/company_live/site.ex:34
+#: lib/firmos_web/live/company_live/site.ex:160
+#: lib/firmos_web/live/company_live/site_edit.ex:94
 #: lib/firmos_web/live/dashboard_live.ex:143
 #, elixir-autogen, elixir-format
 msgid "Website"
@@ -865,17 +871,222 @@ msgstr "Strona wygenerowana"
 msgid "Website published"
 msgstr "Strona opublikowana"
 
-#: lib/firmos_web/live/company_live/site.ex:159
+#: lib/firmos_web/live/company_live/site.ex:215
 #, elixir-autogen, elixir-format
 msgid "Writing your website..."
 msgstr "Piszemy Twoją stronę..."
 
-#: lib/firmos_web/live/company_live/site.ex:136
+#: lib/firmos_web/live/company_live/site.ex:192
 #, elixir-autogen, elixir-format
 msgid "Your website is written from your business plan. Generate the plan first."
 msgstr "Strona powstaje na podstawie biznesplanu. Najpierw wygeneruj biznesplan."
 
-#: lib/firmos_web/live/company_live/site.ex:109
+#: lib/firmos_web/live/company_live/site.ex:165
+#: lib/firmos_web/live/company_live/site_edit.ex:101
 #, elixir-autogen, elixir-format
 msgid "draft version %{version}"
 msgstr "wersja robocza %{version}"
+
+#: lib/firmos_web/live/company_live/site_edit.ex:71
+#, elixir-autogen, elixir-format
+msgid "A new website is being generated. Try again when it's ready."
+msgstr "Trwa generowanie nowej strony. Spróbuj ponownie, gdy będzie gotowa."
+
+#: lib/firmos_web/live/company_live/site_edit.ex:115
+#, elixir-autogen, elixir-format
+msgid "A new website is being generated. You can save once it's ready."
+msgstr "Trwa generowanie nowej strony. Zapiszesz zmiany, gdy będzie gotowa."
+
+#: lib/firmos_web/live/company_live/site_edit.ex:130
+#, elixir-autogen, elixir-format
+msgid "Button label"
+msgstr "Tekst przycisku"
+
+#: lib/firmos_web/live/company_live/site_edit.ex:185
+#, elixir-autogen, elixir-format
+msgid "Cancel"
+msgstr "Anuluj"
+
+#: lib/firmos_web/live/company_live/site.ex:96
+#, elixir-autogen, elixir-format
+msgid "Choose your website's address before publishing."
+msgstr "Przed publikacją wybierz adres strony."
+
+#: lib/firmos_web/live/company_live/site_edit.ex:163
+#, elixir-autogen, elixir-format
+msgid "Contact"
+msgstr "Kontakt"
+
+#: lib/firmos_web/live/company_live/site.ex:102
+#, elixir-autogen, elixir-format
+msgid "Could not publish your website."
+msgstr "Nie udało się opublikować strony."
+
+#: lib/firmos_web/live/company_live/site.ex:85
+#, elixir-autogen, elixir-format
+msgid "Could not save the address."
+msgstr "Nie udało się zapisać adresu."
+
+#: lib/firmos_web/live/company_live/site_edit.ex:75
+#, elixir-autogen, elixir-format
+msgid "Could not save your website."
+msgstr "Nie udało się zapisać strony."
+
+#: lib/firmos_web/live/company_live/site_edit.ex:141
+#, elixir-autogen, elixir-format
+msgid "Description"
+msgstr "Opis"
+
+#: lib/firmos_web/live/company_live/site.ex:281
+#, elixir-autogen, elixir-format
+msgid "Edit"
+msgstr "Edytuj"
+
+#: lib/firmos_web/live/company_live/site_edit.ex:173
+#, elixir-autogen, elixir-format
+msgid "Edit the profile"
+msgstr "Edytuj profil"
+
+#: lib/firmos_web/live/company_live/site_edit.ex:28
+#: lib/firmos_web/live/company_live/site_edit.ex:98
+#, elixir-autogen, elixir-format
+msgid "Edit website"
+msgstr "Edytuj stronę"
+
+#: lib/firmos_web/live/company_live/site_edit.ex:128
+#, elixir-autogen, elixir-format
+msgid "Headline"
+msgstr "Nagłówek"
+
+#: lib/firmos_web/live/company_live/site_edit.ex:127
+#, elixir-autogen, elixir-format
+msgid "Hero"
+msgstr "Sekcja powitalna"
+
+#: lib/firmos_web/live/company_live/site.ex:380
+#, elixir-autogen, elixir-format
+msgid "Lowercase letters, digits and hyphens. Changing the address of a published website moves it: the old address stops working."
+msgstr "Małe litery, cyfry i myślniki. Zmiana adresu opublikowanej strony przenosi ją: stary adres przestaje działać."
+
+#: lib/firmos_web/live/company_live/site_edit.ex:140
+#: lib/firmos_web/live/company_live/site_edit.ex:153
+#, elixir-autogen, elixir-format
+msgid "Name"
+msgstr "Nazwa"
+
+#: lib/firmos_web/live/company_live/site.ex:321
+#, elixir-autogen, elixir-format
+msgid "Not published yet. Only you can see the draft."
+msgstr "Jeszcze nieopublikowana. Wersję roboczą widzisz tylko Ty."
+
+#: lib/firmos_web/live/company_live/site_edit.ex:155
+#, elixir-autogen, elixir-format
+msgid "Note"
+msgstr "Uwaga"
+
+#: lib/firmos_web/controllers/public_site_controller.ex:40
+#, elixir-autogen, elixir-format
+msgid "Page not found"
+msgstr "Nie znaleziono strony"
+
+#: lib/firmos_web/live/company_live/site_edit.ex:154
+#, elixir-autogen, elixir-format
+msgid "Price"
+msgstr "Cena"
+
+#: lib/firmos_web/live/company_live/site.ex:345
+#, elixir-autogen, elixir-format
+msgid "Publish"
+msgstr "Opublikuj"
+
+#: lib/firmos_web/live/company_live/site.ex:345
+#, elixir-autogen, elixir-format
+msgid "Publish changes"
+msgstr "Opublikuj zmiany"
+
+#: lib/firmos_web/live/company_live/site.ex:318
+#, elixir-autogen, elixir-format
+msgid "Published and up to date."
+msgstr "Opublikowana i aktualna."
+
+#: lib/firmos_web/live/company_live/site.ex:304
+#, elixir-autogen, elixir-format
+msgid "Publishing"
+msgstr "Publikacja"
+
+#: lib/firmos_web/live/company_live/site.ex:341
+#, elixir-autogen, elixir-format
+msgid "Publishing..."
+msgstr "Publikowanie..."
+
+#: lib/firmos_web/live/company_live/site.ex:375
+#, elixir-autogen, elixir-format
+msgid "Save address"
+msgstr "Zapisz adres"
+
+#: lib/firmos_web/live/company_live/site_edit.ex:137
+#: lib/firmos_web/live/company_live/site_edit.ex:150
+#: lib/firmos_web/live/company_live/site_edit.ex:164
+#, elixir-autogen, elixir-format
+msgid "Section title"
+msgstr "Tytuł sekcji"
+
+#: lib/firmos_web/live/company_live/site_edit.ex:129
+#, elixir-autogen, elixir-format
+msgid "Subheadline"
+msgstr "Podtytuł"
+
+#: lib/firmos_web/live/company_live/site_edit.ex:165
+#, elixir-autogen, elixir-format
+msgid "Text"
+msgstr "Tekst"
+
+#: lib/firmos_web/controllers/public_site_html.ex:24
+#, elixir-autogen, elixir-format
+msgid "The address may be mistyped, or the website isn't published yet."
+msgstr "Adres może zawierać literówkę albo strona nie została jeszcze opublikowana."
+
+#: lib/firmos_web/live/company_live/site.ex:313
+#, elixir-autogen, elixir-format
+msgid "The draft has changes customers don't see yet."
+msgstr "Wersja robocza ma zmiany, których klienci jeszcze nie widzą."
+
+#: lib/firmos_web/live/company_live/site_edit.ex:167
+#, elixir-autogen, elixir-format
+msgid "The email and city come from your company profile."
+msgstr "E-mail i miasto pochodzą z profilu firmy."
+
+#: lib/firmos_web/live/company_live/site_edit.ex:37
+#, elixir-autogen, elixir-format
+msgid "There is no website draft to edit yet."
+msgstr "Nie ma jeszcze wersji roboczej strony do edycji."
+
+#: lib/firmos_web/live/company_live/site.ex:99
+#, elixir-autogen, elixir-format
+msgid "There is no website draft to publish yet."
+msgstr "Nie ma jeszcze wersji roboczej strony do publikacji."
+
+#: lib/firmos_web/controllers/public_site_html.ex:21
+#, elixir-autogen, elixir-format
+msgid "This page doesn't exist"
+msgstr "Ta strona nie istnieje"
+
+#: lib/firmos_web/live/company_live/site.ex:361
+#, elixir-autogen, elixir-format
+msgid "Website address"
+msgstr "Adres strony"
+
+#: lib/firmos_web/live/company_live/site.ex:79
+#, elixir-autogen, elixir-format
+msgid "Website address saved."
+msgstr "Zapisano adres strony."
+
+#: lib/firmos_web/live/company_live/site_edit.ex:60
+#, elixir-autogen, elixir-format
+msgid "Website saved."
+msgstr "Zapisano stronę."
+
+#: lib/firmos_web/live/company_live/site.ex:93
+#, elixir-autogen, elixir-format
+msgid "Your website is published."
+msgstr "Strona została opublikowana."
