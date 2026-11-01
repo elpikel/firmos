@@ -62,4 +62,54 @@ defmodule FirmosWeb.SitePreviewControllerTest do
     conn = get(build_conn(), ~p"/companies/#{company.id}/site/preview")
     assert redirected_to(conn) == ~p"/users/log-in"
   end
+
+  describe "?version=<n>" do
+    setup %{scope: scope, company: company} do
+      generate_site(scope, company, site_json())
+      site = Sites.get_site(scope, company)
+      {:ok, _site} = Sites.update_content(scope, site, %{"hero" => %{"headline" => "Druga"}})
+      :ok
+    end
+
+    defp preview_headline(conn) do
+      conn
+      |> html_response(200)
+      |> LazyHTML.from_document()
+      |> LazyHTML.query("#site-hero h1")
+      |> LazyHTML.text()
+    end
+
+    test "renders that version", %{conn: conn, company: company} do
+      conn = get(conn, ~p"/companies/#{company.id}/site/preview?version=1")
+      assert preview_headline(conn) =~ site_attrs()["hero"]["headline"]
+    end
+
+    test "renders a later version", %{conn: conn, company: company} do
+      conn = get(conn, ~p"/companies/#{company.id}/site/preview?version=2")
+      assert preview_headline(conn) =~ "Druga"
+    end
+
+    for version <- ["3", "0", "abc", "1x"] do
+      test "responds with not found for version #{version}", %{conn: conn, company: company} do
+        assert_error_sent 404, fn ->
+          get(conn, ~p"/companies/#{company.id}/site/preview?version=#{unquote(version)}")
+        end
+      end
+    end
+
+    test "responds with not found for a malformed version param",
+         %{conn: conn, company: company} do
+      assert_error_sent 404, fn ->
+        get(conn, "/companies/#{company.id}/site/preview?version[]=1")
+      end
+    end
+
+    test "responds with not found for another owner's company", %{company: company} do
+      conn = log_in_user(build_conn(), Firmos.AccountsFixtures.user_fixture())
+
+      assert_error_sent 404, fn ->
+        get(conn, ~p"/companies/#{company.id}/site/preview?version=1")
+      end
+    end
+  end
 end
