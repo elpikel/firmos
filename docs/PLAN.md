@@ -175,3 +175,23 @@ Executable checklist for `/build-loop`. Top-to-bottom = dependency order.
   `story: STORY-011` · `depends-on: T1` · `parallel-group: —`
 - [x] **T3 · translations: pl** — `mix gettext.extract --merge`; translate every new msgid. Acceptance: full feature spec green, `mix precommit` clean.
   `story: STORY-011` · `depends-on: T2` · `parallel-group: —`
+
+## M2 — 🤖 Agent works overnight
+
+### STORY-014 — Approval queue (#37)
+
+> Decisions (#37): New context `Firmos.Approvals`, table `approvals` (enums `approval_kind` = `publish_site_version`, `approval_status` = `pending`/`approved`/`rejected`/`superseded`, `approval_requester` = `agent`; `site_version_id` required for the publish kind by a CHECK; `decided_at` set exactly when not pending; partial unique index: one `pending` per `(company_id, kind)`). `Approvals.request_publish/2` (unscoped, for agents; runs in the caller's transaction) supersedes the company's pending publish request, inserts a new pending one for the CURRENT version of the company's site (`:not_found` for another company's version, `:outdated` for a non-current one), records `approval_requested` (agent, subject the version) and broadcasts on `company:<id>:approvals`. `Approvals.approve/2` (scoped) runs through `Sites.publish_version/4`: under the site's row lock it re-reads the approval (`FOR UPDATE`, must be pending: superseded → `:outdated`, decided → `:already_decided`), marks it approved and records `approval_approved`, then Sites checks the version is still current (`:outdated`, after which the approval is marked superseded) and the slug (`:no_slug`), publishes and records `site_published` with `previous_published_version_id` (undo keeps working), broadcasting the site after commit. `Approvals.reject/2` (scoped): pending → rejected + `approval_rejected`. Sites supersedes the pending publish request whenever a new version becomes current (`insert_version/3`: edit, undo, generation) and on a direct `publish/2`, via `Approvals.supersede_pending/2`, in the same transaction. UI: `/companies/:id/approvals` (`#approvals-pending` stream with `#approve-<id>`/`#reject-<id>` and a preview link to `/companies/:id/site/preview?version=<n>`, `#approvals-history`), live via the approvals and site topics; `#dashboard-approvals` pending count badge.
+> Spec: `test/features/approval_queue_test.exs` (pending until these tasks un-skip it).
+
+- [ ] **T1 · db: approvals table + activity actions** — `mix ecto.gen.migration create_approvals` (enums, table, CHECKs, partial unique index, FK indexes); `mix ecto.gen.migration add_approval_actions_to_activity_action` (`approval_requested`, `approval_approved`, `approval_rejected`). `Firmos.Approvals.Approval` schema; `Entry` actions.
+  `story: STORY-014` · `depends-on: —` · `parallel-group: —`
+- [ ] **T2 · context: `Firmos.Approvals`** — `request_publish/2`, `approve/2`, `reject/2`, `supersede_pending/2`, `get_approval/2`, `list_pending/2`, `list_decided/2`, `count_pending/2`, `subscribe/2`, `unsubscribe/2`. Unit tests: supersede on a new request, double approve refused, the partial unique index, IDOR, cross-company version.
+  `story: STORY-014` · `depends-on: T1` · `parallel-group: —`
+- [ ] **T3 · context: Sites publish seam** — `Sites.publish_version/4` (lock, authorize callback, current-version check, publish core shared with `publish/2`); `Sites.get_version!/3`; supersede the pending publish request from `insert_version/3` and `publish/2`. Unit tests: supersede on direct publish/edit/undo, undo after an approval-publish.
+  `story: STORY-014` · `depends-on: T2` · `parallel-group: —`
+- [ ] **T4 · wire: `/companies/:id/approvals` → `FirmosWeb.CompanyLive.Approvals`** — scoped mount (404), socket-held pending approvals, approve/reject events with flashes (`:outdated`, `:no_slug` with a link to the site page, `:already_decided`, `:not_found`), PubSub reloads; `SitePreviewController` `?version=<n>`; ActivityComponents labels + summaries. Un-skip AC1, AC2, AC4.
+  `story: STORY-014` · `depends-on: T3` · `parallel-group: web`
+- [ ] **T5 · web: dashboard badge** — `#dashboard-approvals[data-count]` linking to the approvals page, reloaded on the approvals and site topics. Un-skip the dashboard scenario and AC3.
+  `story: STORY-014` · `depends-on: T3` · `parallel-group: web`
+- [ ] **T6 · translations: pl** — `mix gettext.extract --merge`; translate every new msgid. Acceptance: full feature spec green, `mix precommit` clean.
+  `story: STORY-014` · `depends-on: T4, T5` · `parallel-group: —`
