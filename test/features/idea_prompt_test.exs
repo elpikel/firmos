@@ -15,8 +15,6 @@ defmodule FirmosWeb.Features.IdeaPromptTest do
   alias Firmos.Ideas
   alias Firmos.Repo
 
-  @moduletag :skip
-
   @valid_idea "Piekarnia rzemieślnicza w Krakowie z dostawą pieczywa na zamówienie."
 
   defp submit_idea(conn, text) do

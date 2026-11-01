@@ -32,7 +32,7 @@ msgstr ""
 #: lib/firmos_web/components/layouts/root.html.heex:81
 #: lib/firmos_web/live/user_live/confirmation.ex:53
 #: lib/firmos_web/live/user_live/login.ex:13
-#: lib/firmos_web/live/user_live/registration.ex:18
+#: lib/firmos_web/live/user_live/registration.ex:20
 #, elixir-autogen, elixir-format
 msgid "Log in"
 msgstr ""
@@ -93,17 +93,17 @@ msgstr ""
 msgid "Account Settings"
 msgstr ""
 
-#: lib/firmos_web/live/user_live/registration.ex:16
+#: lib/firmos_web/live/user_live/registration.ex:18
 #, elixir-autogen, elixir-format
 msgid "Already registered?"
 msgstr ""
 
-#: lib/firmos_web/controllers/page_html/home.html.heex:6
+#: lib/firmos_web/live/home_live.ex:28
 #, elixir-autogen, elixir-format
 msgid "An AI team that runs your small business."
 msgstr ""
 
-#: lib/firmos_web/live/user_live/registration.ex:70
+#: lib/firmos_web/live/user_live/registration.ex:95
 #, elixir-autogen, elixir-format
 msgid "An email was sent to %{email}, please access it to confirm your account."
 msgstr ""
@@ -139,12 +139,12 @@ msgstr ""
 msgid "Confirming..."
 msgstr ""
 
-#: lib/firmos_web/live/user_live/registration.ex:36
+#: lib/firmos_web/live/user_live/registration.ex:56
 #, elixir-autogen, elixir-format
 msgid "Create an account"
 msgstr ""
 
-#: lib/firmos_web/live/user_live/registration.ex:35
+#: lib/firmos_web/live/user_live/registration.ex:55
 #, elixir-autogen, elixir-format
 msgid "Creating account..."
 msgstr ""
@@ -156,7 +156,7 @@ msgstr ""
 
 #: lib/firmos_web/live/user_live/login.ex:52
 #: lib/firmos_web/live/user_live/login.ex:77
-#: lib/firmos_web/live/user_live/registration.ex:28
+#: lib/firmos_web/live/user_live/registration.ex:48
 #: lib/firmos_web/live/user_live/settings.ex:23
 #, elixir-autogen, elixir-format
 msgid "Email"
@@ -172,14 +172,9 @@ msgstr ""
 msgid "Email changed successfully."
 msgstr ""
 
-#: lib/firmos_web/controllers/page_html/home.html.heex:28
+#: lib/firmos_web/live/home_live.ex:67
 #, elixir-autogen, elixir-format
 msgid "Get started"
-msgstr ""
-
-#: lib/firmos_web/controllers/page_html/home.html.heex:20
-#, elixir-autogen, elixir-format
-msgid "Go to dashboard"
 msgstr ""
 
 #: lib/firmos_web/live/user_live/login.ex:126
@@ -254,7 +249,7 @@ msgstr ""
 msgid "Password updated successfully!"
 msgstr ""
 
-#: lib/firmos_web/live/user_live/registration.ex:14
+#: lib/firmos_web/live/user_live/registration.ex:16
 #, elixir-autogen, elixir-format
 msgid "Register for an account"
 msgstr ""
@@ -264,6 +259,7 @@ msgstr ""
 msgid "Save Password"
 msgstr ""
 
+#: lib/firmos_web/live/home_live.ex:64
 #: lib/firmos_web/live/user_live/settings.ex:66
 #, elixir-autogen, elixir-format
 msgid "Saving..."
@@ -320,7 +316,7 @@ msgstr ""
 msgid "You need to reauthenticate to perform sensitive actions on your account."
 msgstr ""
 
-#: lib/firmos_web/controllers/page_html/home.html.heex:9
+#: lib/firmos_web/live/home_live.ex:31
 #, elixir-autogen, elixir-format
 msgid "You set the direction. Firmos agents build your website, look after your customers and report back every morning."
 msgstr ""
@@ -333,4 +329,34 @@ msgstr ""
 #: lib/firmos_web/live/user_live/login.ex:36
 #, elixir-autogen, elixir-format
 msgid "the mailbox page"
+msgstr ""
+
+#: lib/firmos_web/live/home_live.ex:60
+#, elixir-autogen, elixir-format
+msgid "A few sentences are enough: what you sell, to whom and where."
+msgstr ""
+
+#: lib/firmos_web/live/user_live/registration.ex:39
+#, elixir-autogen, elixir-format
+msgid "Create an account and we will start working on it."
+msgstr ""
+
+#: lib/firmos_web/live/home_live.ex:49
+#, elixir-autogen, elixir-format
+msgid "Describe your business idea"
+msgstr ""
+
+#: lib/firmos_web/live/home_live.ex:51
+#, elixir-autogen, elixir-format
+msgid "For example: an artisan bakery in Kraków that delivers fresh bread to offices every morning."
+msgstr ""
+
+#: lib/firmos_web/live/user_live/registration.ex:33
+#, elixir-autogen, elixir-format
+msgid "Your idea"
+msgstr ""
+
+#: lib/firmos_web/live/home_live.ex:89
+#, elixir-autogen, elixir-format
+msgid "Your idea has been saved."
 msgstr ""

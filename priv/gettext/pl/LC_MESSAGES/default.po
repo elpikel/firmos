@@ -32,7 +32,7 @@ msgstr "Panel"
 #: lib/firmos_web/components/layouts/root.html.heex:81
 #: lib/firmos_web/live/user_live/confirmation.ex:53
 #: lib/firmos_web/live/user_live/login.ex:13
-#: lib/firmos_web/live/user_live/registration.ex:18
+#: lib/firmos_web/live/user_live/registration.ex:20
 #, elixir-autogen, elixir-format
 msgid "Log in"
 msgstr "Zaloguj się"
@@ -93,17 +93,17 @@ msgstr "Link potwierdzający zmianę adresu e-mail został wysłany na nowy adre
 msgid "Account Settings"
 msgstr "Ustawienia konta"
 
-#: lib/firmos_web/live/user_live/registration.ex:16
+#: lib/firmos_web/live/user_live/registration.ex:18
 #, elixir-autogen, elixir-format
 msgid "Already registered?"
 msgstr "Masz już konto?"
 
-#: lib/firmos_web/controllers/page_html/home.html.heex:6
+#: lib/firmos_web/live/home_live.ex:28
 #, elixir-autogen, elixir-format
 msgid "An AI team that runs your small business."
 msgstr "Zespół AI, który prowadzi Twoją małą firmę."
 
-#: lib/firmos_web/live/user_live/registration.ex:70
+#: lib/firmos_web/live/user_live/registration.ex:95
 #, elixir-autogen, elixir-format
 msgid "An email was sent to %{email}, please access it to confirm your account."
 msgstr "Wysłaliśmy wiadomość na adres %{email}. Otwórz ją, aby potwierdzić konto."
@@ -139,12 +139,12 @@ msgstr "Potwierdź nowe hasło"
 msgid "Confirming..."
 msgstr "Potwierdzam..."
 
-#: lib/firmos_web/live/user_live/registration.ex:36
+#: lib/firmos_web/live/user_live/registration.ex:56
 #, elixir-autogen, elixir-format
 msgid "Create an account"
 msgstr "Załóż konto"
 
-#: lib/firmos_web/live/user_live/registration.ex:35
+#: lib/firmos_web/live/user_live/registration.ex:55
 #, elixir-autogen, elixir-format
 msgid "Creating account..."
 msgstr "Zakładam konto..."
@@ -156,7 +156,7 @@ msgstr "Nie masz konta?"
 
 #: lib/firmos_web/live/user_live/login.ex:52
 #: lib/firmos_web/live/user_live/login.ex:77
-#: lib/firmos_web/live/user_live/registration.ex:28
+#: lib/firmos_web/live/user_live/registration.ex:48
 #: lib/firmos_web/live/user_live/settings.ex:23
 #, elixir-autogen, elixir-format
 msgid "Email"
@@ -172,15 +172,10 @@ msgstr "Link do zmiany adresu e-mail jest nieprawidłowy lub wygasł."
 msgid "Email changed successfully."
 msgstr "Adres e-mail został zmieniony."
 
-#: lib/firmos_web/controllers/page_html/home.html.heex:28
+#: lib/firmos_web/live/home_live.ex:67
 #, elixir-autogen, elixir-format
 msgid "Get started"
 msgstr "Zacznij teraz"
-
-#: lib/firmos_web/controllers/page_html/home.html.heex:20
-#, elixir-autogen, elixir-format
-msgid "Go to dashboard"
-msgstr "Przejdź do panelu"
 
 #: lib/firmos_web/live/user_live/login.ex:126
 #, elixir-autogen, elixir-format
@@ -254,7 +249,7 @@ msgstr "Hasło"
 msgid "Password updated successfully!"
 msgstr "Hasło zostało zmienione!"
 
-#: lib/firmos_web/live/user_live/registration.ex:14
+#: lib/firmos_web/live/user_live/registration.ex:16
 #, elixir-autogen, elixir-format
 msgid "Register for an account"
 msgstr "Utwórz konto"
@@ -264,6 +259,7 @@ msgstr "Utwórz konto"
 msgid "Save Password"
 msgstr "Zapisz hasło"
 
+#: lib/firmos_web/live/home_live.ex:64
 #: lib/firmos_web/live/user_live/settings.ex:66
 #, elixir-autogen, elixir-format
 msgid "Saving..."
@@ -320,7 +316,7 @@ msgstr "Zaloguj się ponownie, aby zobaczyć tę stronę."
 msgid "You need to reauthenticate to perform sensitive actions on your account."
 msgstr "Aby wykonać wrażliwe operacje na koncie, zaloguj się ponownie."
 
-#: lib/firmos_web/controllers/page_html/home.html.heex:9
+#: lib/firmos_web/live/home_live.ex:31
 #, elixir-autogen, elixir-format
 msgid "You set the direction. Firmos agents build your website, look after your customers and report back every morning."
 msgstr "Ty wyznaczasz kierunek. Agenci Firmos budują Twoją stronę, dbają o klientów i co rano zdają raport."
@@ -334,3 +330,33 @@ msgstr "lub"
 #, elixir-autogen, elixir-format
 msgid "the mailbox page"
 msgstr "stronie skrzynki pocztowej"
+
+#: lib/firmos_web/live/home_live.ex:60
+#, elixir-autogen, elixir-format
+msgid "A few sentences are enough: what you sell, to whom and where."
+msgstr "Wystarczy kilka zdań: co sprzedajesz, komu i gdzie."
+
+#: lib/firmos_web/live/user_live/registration.ex:39
+#, elixir-autogen, elixir-format
+msgid "Create an account and we will start working on it."
+msgstr "Załóż konto, a zajmiemy się resztą."
+
+#: lib/firmos_web/live/home_live.ex:49
+#, elixir-autogen, elixir-format
+msgid "Describe your business idea"
+msgstr "Opisz swój pomysł na biznes"
+
+#: lib/firmos_web/live/home_live.ex:51
+#, elixir-autogen, elixir-format
+msgid "For example: an artisan bakery in Kraków that delivers fresh bread to offices every morning."
+msgstr "Na przykład: rzemieślnicza piekarnia w Krakowie, która co rano dostarcza świeże pieczywo do biur."
+
+#: lib/firmos_web/live/user_live/registration.ex:33
+#, elixir-autogen, elixir-format
+msgid "Your idea"
+msgstr "Twój pomysł"
+
+#: lib/firmos_web/live/home_live.ex:89
+#, elixir-autogen, elixir-format
+msgid "Your idea has been saved."
+msgstr "Twój pomysł został zapisany."

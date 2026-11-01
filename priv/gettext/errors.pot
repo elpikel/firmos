@@ -117,3 +117,17 @@ msgstr ""
 
 msgid "does not match password"
 msgstr ""
+
+## From Firmos.Ideas.Idea changeset (custom messages)
+msgid "is too short, please give more detail (at least %{count} characters)"
+msgid_plural "is too short, please give more detail (at least %{count} characters)"
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "is too long, maximum %{count} characters"
+msgid_plural "is too long, maximum %{count} characters"
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "contains characters that are not allowed"
+msgstr ""

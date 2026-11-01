@@ -2,7 +2,10 @@ defmodule FirmosWeb.UserLive.Registration do
   use FirmosWeb, :live_view
 
   alias Firmos.Accounts
+  alias Firmos.Accounts.Scope
   alias Firmos.Accounts.User
+  alias Firmos.Ideas
+  alias Firmos.Ideas.Idea
 
   @impl true
   def render(assigns) do
@@ -20,6 +23,23 @@ defmodule FirmosWeb.UserLive.Registration do
             </:subtitle>
           </.header>
         </div>
+
+        <figure
+          :if={@idea}
+          id="preserved-idea"
+          class="mb-6 space-y-2 rounded-2xl border border-base-300 bg-base-200/60 p-4"
+        >
+          <figcaption class="flex items-center gap-2 text-sm font-semibold text-base-content/70">
+            <.icon name="hero-light-bulb" class="size-4" />
+            {gettext("Your idea")}
+          </figcaption>
+          <blockquote class="whitespace-pre-line break-words text-sm leading-6 text-base-content">
+            {@idea.text}
+          </blockquote>
+          <p class="text-xs text-base-content/60">
+            {gettext("Create an account and we will start working on it.")}
+          </p>
+        </figure>
 
         <.form for={@form} id="registration_form" phx-submit="save" phx-change="validate">
           <.input
@@ -47,16 +67,21 @@ defmodule FirmosWeb.UserLive.Registration do
     {:ok, redirect(socket, to: FirmosWeb.UserAuth.signed_in_path(socket))}
   end
 
-  def mount(_params, _session, socket) do
+  def mount(params, _session, socket) do
     changeset = Accounts.change_user_email(%User{}, %{}, validate_unique: false)
 
-    {:ok, assign_form(socket, changeset), temporary_assigns: [form: nil]}
+    {:ok,
+     socket
+     |> assign(:idea, Ideas.get_draft_by_token(params["idea"]))
+     |> assign_form(changeset), temporary_assigns: [form: nil]}
   end
 
   @impl true
   def handle_event("save", %{"user" => user_params}, socket) do
     case Accounts.register_user(user_params) do
       {:ok, user} ->
+        :ok = attach_idea(user, socket.assigns.idea)
+
         {:ok, _} =
           Accounts.deliver_login_instructions(
             user,
@@ -82,6 +107,17 @@ defmodule FirmosWeb.UserLive.Registration do
   def handle_event("validate", %{"user" => user_params}, socket) do
     changeset = Accounts.change_user_email(%User{}, user_params, validate_unique: false)
     {:noreply, assign_form(socket, Map.put(changeset, :action, :validate))}
+  end
+
+  # The draft may have been attached by another tab between mount and submit;
+  # the account still exists, so sign-up carries on without the idea.
+  defp attach_idea(_user, nil), do: :ok
+
+  defp attach_idea(user, %Idea{token: token}) do
+    case Ideas.attach_to_user(Scope.for_user(user), token) do
+      {:ok, _idea} -> :ok
+      {:error, :not_found} -> :ok
+    end
   end
 
   defp assign_form(socket, %Ecto.Changeset{} = changeset) do
