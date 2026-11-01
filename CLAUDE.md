@@ -40,7 +40,7 @@ Each doc has **one owner** — only that command writes it (others append to `do
 | `/quick-fix` | small one-spot fixes, no plan |
 | `/issue` | GitHub issue → triage → quick-fix or plan + build-loop → PR |
 
-**Given a GitHub issue URL or number, run `/issue`.** Issues labelled `claude` run it automatically in CI (`.github/workflows/claude-issue.yml`).
+**Given a GitHub issue URL or number, run `/issue`.**
 
 Git: `/git-commit`, `/git-pr`, `/git-merge`, `/git-issue`, `/git-remote` (follow the `github` skill). Main branch: `main`.
 
