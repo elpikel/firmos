@@ -469,38 +469,167 @@ _Agents work overnight and report every morning, within limits the owner approve
 
 ### STORY-012 — Nightly task
 
-As an **owner**, I want **an agent to pick and complete one high-value task for my company each night**, so that **the business moves forward without my time**.
-**Size:** L · **Status:** drafting
+As an **owner**,
+I want **an agent to pick and complete one high-value task for my company each night**,
+so that **the business moves forward without my time**.
+
+**Size:** L · **Status:** ready
+
+**Acceptance criteria**
+
+_Happy path:_
 
 ```
-AC1 — Given a company with a plan, When the nightly run executes, Then one task is chosen, executed and logged
-AC2 — Given a task that needs approval, When the agent reaches it, Then it is queued for approval instead of executed
-AC3 — Given the AI provider fails, When the nightly run executes, Then the run is marked failed and retried next night
+AC1 — nightly website task
+  Given a company with a ready plan and a site draft
+  When  the nightly run executes (02:00 Europe/Warsaw)
+  Then  the agent picks the next open 30-day plan task that the website can serve,
+        creates a new site version (source agent), marks the task done,
+        and logs it in the activity log (undoable)
+
+AC2 — publishing waits for approval
+  Given a published site
+  When  the nightly run changes the draft
+  Then  the change is not published; a publish approval is queued (STORY-014)
 ```
+
+_Sad path:_
+
+```
+AC3 — provider fails
+  Given the AI provider fails
+  When  the nightly run executes
+  Then  the run is marked failed, no version is created, and the next night tries again
+
+AC4 — nothing to do
+  Given a company without a ready plan, without a site, or with no open tasks
+  When  the nightly run executes
+  Then  the run is skipped and nothing changes; at most one run per company per night
+```
+
+**Out of scope:** integrations (inbox, ads, invoices) and choosing tasks outside the website.
+
+---
 
 ### STORY-013 — Morning report
 
-As an **owner**, I want **a morning email summarising what was done overnight and what needs my decision**, so that **I stay in control in two minutes a day**.
-**Size:** M · **Status:** drafting
+As an **owner**,
+I want **a morning email summarising what was done overnight and what needs my decision**,
+so that **I stay in control in two minutes a day**.
+
+**Size:** M · **Status:** ready
+
+**Acceptance criteria**
+
+_Happy path:_
 
 ```
-AC1 — Given overnight activity, When it's 07:00 Europe/Warsaw, Then a report email lists completed tasks and pending approvals
-AC2 — Given no activity overnight, When the report runs, Then no email is sent
+AC1 — report is sent
+  Given completed agent tasks since the last report or pending approvals
+  When  it is 07:00 Europe/Warsaw
+  Then  the owner receives a Polish email listing completed tasks and pending approvals with links
 ```
+
+_Sad path:_
+
+```
+AC2 — nothing to report
+  Given no agent activity and no pending approvals
+  When  the report runs
+  Then  no email is sent
+
+AC3 — once a day
+  Given a report was already sent today
+  When  the report runs again
+  Then  no second email is sent
+```
+
+**Out of scope:** report settings/opt-out, ad and invoice sections (M4/M5).
+
+---
 
 ### STORY-014 — Approval queue
 
-As an **owner**, I want **to approve or reject actions that spend money or publish outside the plan**, so that **nothing happens without my consent**.
-**Size:** M · **Status:** drafting
+As an **owner**,
+I want **to approve or reject agent actions that publish outside the plan**,
+so that **nothing goes live without my consent**.
+
+**Size:** M · **Status:** ready
+
+**Acceptance criteria**
+
+_Happy path:_
 
 ```
-AC1 — Given a pending approval, When the owner approves it, Then the action executes and is logged
-AC2 — Given a pending approval, When the owner rejects it, Then it is discarded and logged
+AC1 — approve
+  Given a pending request to publish a site version
+  When  the owner approves it
+  Then  that version is published and the approval is logged
+
+AC2 — reject
+  Given a pending request to publish a site version
+  When  the owner rejects it
+  Then  it is discarded, nothing is published, and the rejection is logged
 ```
+
+_Sad path:_
+
+```
+AC3 — outdated request
+  Given the owner edited the draft after the request was created
+  When  the owner approves the request
+  Then  it is refused as outdated
+
+AC4 — private
+  Given owner A and owner B's approval
+  When  owner A opens or acts on it
+  Then  access is denied (404)
+```
+
+**Notes:** the dashboard shows the number of pending approvals. Spending money arrives with M4/M5.
+
+---
 
 ### STORY-015 — On-demand task
 
-As an **owner**, I want **to ask the agent for a specific task now**, so that **I don't wait for the night**. _(placeholder; gated by credits in M6)_
+As an **owner**,
+I want **to ask the agent for a specific task now**,
+so that **I don't wait for the night**.
+
+**Size:** M · **Status:** ready
+
+**Acceptance criteria**
+
+_Happy path:_
+
+```
+AC1 — run a task now
+  Given a company with a ready plan and a site draft
+  When  the owner submits a task (e.g. "dodaj sekcję FAQ")
+  Then  the agent runs it in the background, creates a new site version, logs it,
+        and queues a publish approval if the site is published
+```
+
+_Sad path:_
+
+```
+AC2 — daily limit
+  Given 3 successful on-demand tasks today (Europe/Warsaw)
+  When  the owner submits another one
+  Then  it is refused with a daily-limit message; failed runs do not count
+
+AC3 — task text validation
+  Given the on-demand task form
+  When  the owner submits fewer than 5 or more than 500 characters
+  Then  a validation error is shown
+
+AC4 — provider fails
+  Given the AI provider fails
+  When  the on-demand task runs
+  Then  the owner sees a failure message and no version is created
+```
+
+**Notes:** the 3/day cap is replaced by plan credits in M6 (STORY-031).
 
 ---
 
@@ -527,9 +656,67 @@ As an **owner**, I want **to ask the agent for a specific task now**, so that **
 - **STORY-028**: Overdue invoices trigger polite payment reminders.
 - **STORY-029**: Payments from Przelewy24/Stripe are matched to invoices.
 
-## 💳 Epic M6: Plans, billing & data _(placeholders)_
+## 💳 Epic M6: Plans, billing & data _(030–031 placeholders)_
 
 - **STORY-030**: Owner subscribes to Start, Biznes or Pro (PLN, net prices).
 - **STORY-031**: Plan limits are enforced (features, number of on-demand credits).
-- **STORY-032**: Owner exports all their company data (site, content, history).
-- **STORY-033**: Owner deletes their account and all data (GDPR).
+
+### STORY-032 — Export my data
+
+As an **owner**,
+I want **to download all my data**,
+so that **I can take it elsewhere (GDPR data portability)**.
+
+**Size:** S · **Status:** ready
+
+**Acceptance criteria**
+
+```
+AC1 — download
+  Given a signed-in owner
+  When  they click "Pobierz moje dane" in settings
+  Then  a JSON file downloads with their account, companies, ideas, plans, site versions and activity
+```
+
+_Sad path:_
+
+```
+AC2 — only own data
+  Given owner A and owner B
+  When  owner A downloads their export
+  Then  it contains none of owner B's data
+```
+
+---
+
+### STORY-033 — Delete my account
+
+As an **owner**,
+I want **to delete my account and all my data**,
+so that **nothing about me stays in Firmos (GDPR right to erasure)**.
+
+**Size:** M · **Status:** ready
+
+**Acceptance criteria**
+
+```
+AC1 — delete everything
+  Given a signed-in owner in settings
+  When  they confirm deletion by typing their email
+  Then  the account and all their companies, ideas, plans, sites, versions and activity are deleted,
+        they are logged out on every device, and their public sites return 404
+```
+
+_Sad path:_
+
+```
+AC2 — wrong confirmation
+  Given the delete form
+  When  the owner types a different email
+  Then  nothing is deleted and an error is shown
+
+AC3 — queued work
+  Given queued agent jobs for the owner's companies
+  When  the account is deleted
+  Then  those jobs finish without doing anything
+```
