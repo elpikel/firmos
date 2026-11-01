@@ -81,12 +81,51 @@ defmodule Firmos.Ideas do
   company, or `nil`.
   """
   @spec latest_unclaimed_for_user(%Scope{}) :: Idea.t() | nil
-  def latest_unclaimed_for_user(%Scope{user: %{id: user_id}}) do
-    from(i in Idea, as: :idea)
-    |> where([idea: i], i.user_id == ^user_id and is_nil(i.claimed_at))
+  def latest_unclaimed_for_user(%Scope{} = scope) do
+    scope
+    |> unclaimed_query()
     |> order_by([idea: i], desc: i.inserted_at, desc: i.id)
     |> limit(1)
     |> Repo.one()
+  end
+
+  @doc """
+  Returns all of the owner's ideas not yet turned into a company, oldest first.
+  """
+  @spec list_unclaimed_for_user(%Scope{}) :: [Idea.t()]
+  def list_unclaimed_for_user(%Scope{} = scope) do
+    scope
+    |> unclaimed_query()
+    |> order_by([idea: i], asc: i.inserted_at, asc: i.id)
+    |> Repo.all()
+  end
+
+  defp unclaimed_query(%Scope{user: %{id: user_id}}) do
+    from(i in Idea, as: :idea)
+    |> where([idea: i], i.user_id == ^user_id and is_nil(i.claimed_at))
+  end
+
+  @doc """
+  Marks the scope owner's `idea` as turned into a company.
+
+  The update only matches while the idea is still unclaimed, so when two
+  callers race for the same idea exactly one gets `{:ok, idea}`; the other
+  (and any caller passing someone else's idea) gets `{:error, :already_claimed}`.
+  Run it inside the transaction that creates the company.
+  """
+  @spec claim(%Scope{}, Idea.t()) :: {:ok, Idea.t()} | {:error, :already_claimed}
+  def claim(%Scope{user: %{id: user_id}}, %Idea{id: idea_id}) do
+    now = DateTime.utc_now(:second)
+
+    query =
+      from(i in Idea, as: :idea)
+      |> where([idea: i], i.id == ^idea_id and i.user_id == ^user_id and is_nil(i.claimed_at))
+      |> select([idea: i], i)
+
+    case Repo.update_all(query, set: [claimed_at: now, updated_at: now]) do
+      {1, [idea]} -> {:ok, idea}
+      {0, []} -> {:error, :already_claimed}
+    end
   end
 
   defp draft_by_token_query(token) do
