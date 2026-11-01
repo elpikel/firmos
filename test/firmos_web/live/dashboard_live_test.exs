@@ -68,7 +68,11 @@ defmodule FirmosWeb.DashboardLiveTest do
     |> render_change()
 
     assert Enum.sort(Registry.keys(Firmos.PubSub, view.pid)) ==
-             Enum.sort(["company:#{older.id}:plans", "company:#{older.id}:site"])
+             Enum.sort([
+               "company:#{older.id}:plans",
+               "company:#{older.id}:site",
+               "company:#{older.id}:approvals"
+             ])
 
     refute "company:#{newest.id}:plans" in Registry.keys(Firmos.PubSub, view.pid)
   end

@@ -4,19 +4,22 @@ defmodule FirmosWeb.DashboardLive do
   live_session, so `@current_scope.user` is always present here.
 
   Shows one of the owner's companies at a glance: its business plan, its
-  website and its latest activity. The company is the `?company=<id>` query
+  website, the number of requests waiting for the owner's approval and its
+  latest activity. The company is the `?company=<id>` query
   param (set by `#company-switcher`), resolved through the owner's scope, so
   another owner's id is a 404; without it the dashboard shows the newest
   company. With no company at all it asks for a business idea.
 
-  Sections follow the selected company live through `Firmos.Plans.subscribe/2`
-  and `Firmos.Sites.subscribe/2`; switching companies moves the subscriptions.
+  Sections follow the selected company live through `Firmos.Plans.subscribe/2`,
+  `Firmos.Sites.subscribe/2` and `Firmos.Approvals.subscribe/2`; switching
+  companies moves the subscriptions.
   """
   use FirmosWeb, :live_view
 
   import FirmosWeb.ActivityComponents, only: [activity_entry: 1]
 
   alias Firmos.Activity
+  alias Firmos.Approvals
   alias Firmos.Companies
   alias Firmos.Companies.Company
   alias Firmos.Plans
@@ -66,13 +69,21 @@ defmodule FirmosWeb.DashboardLive do
     {:noreply, socket |> load_plan() |> load_activity()}
   end
 
+  # A site change can supersede a pending approval.
   def handle_info({:site_updated, %{company_id: id}}, %{assigns: %{company: %{id: id}}} = socket) do
-    {:noreply, socket |> load_site() |> load_activity()}
+    {:noreply, socket |> load_site() |> load_approvals() |> load_activity()}
+  end
+
+  def handle_info(
+        {:approvals_updated, %{company_id: id}},
+        %{assigns: %{company: %{id: id}}} = socket
+      ) do
+    {:noreply, socket |> load_approvals() |> load_activity()}
   end
 
   # Sent for the previous company before the switch unsubscribed from it.
   def handle_info({event, %{company_id: _other}}, socket)
-      when event in [:plan_updated, :site_updated] do
+      when event in [:plan_updated, :site_updated, :approvals_updated] do
     {:noreply, socket}
   end
 
@@ -97,6 +108,7 @@ defmodule FirmosWeb.DashboardLive do
     |> assign(:switcher_form, switcher_form(company))
     |> load_plan()
     |> load_site()
+    |> load_approvals()
     |> load_activity()
   end
 
@@ -109,11 +121,13 @@ defmodule FirmosWeb.DashboardLive do
       if old do
         :ok = Plans.unsubscribe(scope, old)
         :ok = Sites.unsubscribe(scope, old)
+        :ok = Approvals.unsubscribe(scope, old)
       end
 
       if new do
         :ok = Plans.subscribe(scope, new)
         :ok = Sites.subscribe(scope, new)
+        :ok = Approvals.subscribe(scope, new)
       end
     end
 
@@ -145,6 +159,13 @@ defmodule FirmosWeb.DashboardLive do
     |> assign(:site_state, site_state(site))
     |> assign(:public_url, public_url(site))
     |> assign(:unpublished_changes?, Sites.unpublished_changes?(site))
+  end
+
+  defp load_approvals(%{assigns: %{company: nil}} = socket),
+    do: assign(socket, :pending_approvals, 0)
+
+  defp load_approvals(%{assigns: %{current_scope: scope, company: company}} = socket) do
+    assign(socket, :pending_approvals, Approvals.count_pending(scope, company))
   end
 
   defp load_activity(%{assigns: %{company: nil}} = socket),
@@ -243,6 +264,35 @@ defmodule FirmosWeb.DashboardLive do
     >
       {render_slot(@inner_block)}
       <.icon name={@icon} class="size-4 transition group-hover/link:translate-x-0.5" />
+    </.link>
+    """
+  end
+
+  attr :company, Company, required: true
+  attr :count, :integer, required: true
+
+  defp approvals_badge(assigns) do
+    ~H"""
+    <.link
+      id="dashboard-approvals"
+      navigate={~p"/companies/#{@company.id}/approvals"}
+      data-count={@count}
+      class={[
+        "inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-medium transition",
+        if(@count > 0,
+          do: "border-amber-200 bg-amber-50 text-amber-900 hover:border-amber-300 hover:bg-amber-100",
+          else: "border-zinc-200 text-zinc-700 hover:border-zinc-300 hover:bg-zinc-50"
+        )
+      ]}
+    >
+      <.icon name="hero-inbox" class="size-4" />
+      {gettext("Approvals")}
+      <span class={[
+        "rounded-full px-1.5 text-xs font-semibold tabular-nums",
+        if(@count > 0, do: "bg-amber-500 text-white", else: "bg-zinc-100 text-zinc-600")
+      ]}>
+        {@count}
+      </span>
     </.link>
     """
   end
@@ -429,14 +479,17 @@ defmodule FirmosWeb.DashboardLive do
                   {@company.name}
                 </h2>
               </div>
-              <.link
-                id="company-profile-link"
-                navigate={~p"/companies/#{@company.id}/profile"}
-                class="inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 px-3 py-1.5 text-sm font-medium text-zinc-700 transition hover:border-zinc-300 hover:bg-zinc-50"
-              >
-                <.icon name="hero-pencil-square" class="size-4" />
-                {gettext("Edit profile")}
-              </.link>
+              <div class="flex flex-wrap items-center gap-2">
+                <.approvals_badge company={@company} count={@pending_approvals} />
+                <.link
+                  id="company-profile-link"
+                  navigate={~p"/companies/#{@company.id}/profile"}
+                  class="inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 px-3 py-1.5 text-sm font-medium text-zinc-700 transition hover:border-zinc-300 hover:bg-zinc-50"
+                >
+                  <.icon name="hero-pencil-square" class="size-4" />
+                  {gettext("Edit profile")}
+                </.link>
+              </div>
             </div>
             <p
               :if={@company.description}

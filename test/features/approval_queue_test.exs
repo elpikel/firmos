@@ -71,7 +71,6 @@ defmodule FirmosWeb.Features.ApprovalQueueTest do
   # ---------------------------------------------------------------------
 
   describe "Scenario: AC1 — the owner sees a pending request" do
-    @describetag :skip
     setup :register_and_log_in_user
 
     setup %{conn: conn, scope: scope} do
@@ -93,7 +92,6 @@ defmodule FirmosWeb.Features.ApprovalQueueTest do
   end
 
   describe "Scenario: AC1 — the owner approves a pending publication" do
-    @describetag :skip
     setup :register_and_log_in_user
 
     setup %{conn: conn, scope: scope} do
@@ -132,7 +130,6 @@ defmodule FirmosWeb.Features.ApprovalQueueTest do
   end
 
   describe "Scenario: AC2 — the owner rejects a pending publication" do
-    @describetag :skip
     setup :register_and_log_in_user
 
     setup %{conn: conn, scope: scope} do
@@ -167,7 +164,6 @@ defmodule FirmosWeb.Features.ApprovalQueueTest do
   end
 
   describe "Scenario: the dashboard shows the number of pending approvals" do
-    @describetag :skip
     setup :register_and_log_in_user
 
     setup %{conn: conn, scope: scope} do
@@ -193,8 +189,6 @@ defmodule FirmosWeb.Features.ApprovalQueueTest do
   # ---------------------------------------------------------------------
 
   describe "Scenario: AC3 — rejecting an approval after the owner edited the draft" do
-    @describetag :skip
-
     setup do
       scope = user_scope_fixture()
       %{company: company, approval: approval} = pending_publication(scope, "piekarnia")
@@ -217,7 +211,6 @@ defmodule FirmosWeb.Features.ApprovalQueueTest do
   end
 
   describe "Scenario: AC4 — rejecting another owner's approvals page" do
-    @describetag :skip
     setup :register_and_log_in_user
 
     setup do
@@ -232,7 +225,6 @@ defmodule FirmosWeb.Features.ApprovalQueueTest do
   end
 
   describe "Scenario: AC4 — rejecting a forged approval id on the owner's own page" do
-    @describetag :skip
     setup :register_and_log_in_user
 
     setup %{conn: conn, scope: scope} do
@@ -259,8 +251,6 @@ defmodule FirmosWeb.Features.ApprovalQueueTest do
   end
 
   describe "Scenario: AC4 — rejecting a decision on another owner's approval" do
-    @describetag :skip
-
     setup do
       %{approval: other} = pending_publication(user_scope_fixture(), "inna-firma")
       scope = user_scope_fixture()

@@ -14,6 +14,7 @@ defmodule FirmosWeb.ActivityComponents do
   alias Firmos.Activity.Entry
 
   @site_actions [:site_generated, :site_updated, :site_published, :site_undone]
+  @approval_actions [:approval_requested, :approval_approved, :approval_rejected]
 
   @doc """
   One activity entry: actor, action, time and summary, with the optional
@@ -147,6 +148,15 @@ defmodule FirmosWeb.ActivityComponents do
     """
   end
 
+  defp summary(%{entry: %Entry{action: action, metadata: %{"version" => version}}} = assigns)
+       when action in @approval_actions and is_integer(version) do
+    assigns = assign(assigns, :text, approval_summary(action, version))
+
+    ~H"""
+    <p>{@text}</p>
+    """
+  end
+
   defp summary(%{entry: %Entry{action: action}} = assigns) do
     assigns = assign(assigns, :text, fallback_summary(action))
 
@@ -163,6 +173,9 @@ defmodule FirmosWeb.ActivityComponents do
   defp fallback_summary(:site_updated), do: gettext("Edited the website.")
   defp fallback_summary(:site_published), do: gettext("Published the website.")
   defp fallback_summary(:site_undone), do: gettext("Undid a website change.")
+  defp fallback_summary(:approval_requested), do: gettext("Asked for approval to publish.")
+  defp fallback_summary(:approval_approved), do: gettext("Approved publishing the website.")
+  defp fallback_summary(:approval_rejected), do: gettext("Rejected publishing the website.")
   # An action without a renderer yet must not break the whole log page; the
   # test over `Entry.actions/0` catches the missing clause.
   defp fallback_summary(_action), do: ""
@@ -185,6 +198,18 @@ defmodule FirmosWeb.ActivityComponents do
   defp site_summary(:site_undone, version),
     do: gettext("Restored the website as version %{version}.", version: version)
 
+  defp approval_summary(:approval_requested, version),
+    do:
+      gettext("Asked for approval to publish version %{version} of the website.",
+        version: version
+      )
+
+  defp approval_summary(:approval_approved, version),
+    do: gettext("Approved publishing version %{version} of the website.", version: version)
+
+  defp approval_summary(:approval_rejected, version),
+    do: gettext("Rejected publishing version %{version} of the website.", version: version)
+
   @doc """
   The translated label for an action; an action without a label yet shows
   as stored rather than crashing the log.
@@ -198,6 +223,9 @@ defmodule FirmosWeb.ActivityComponents do
   def action_label(:site_updated), do: gettext("Website edited")
   def action_label(:site_published), do: gettext("Website published")
   def action_label(:site_undone), do: gettext("Website change undone")
+  def action_label(:approval_requested), do: gettext("Approval requested")
+  def action_label(:approval_approved), do: gettext("Publication approved")
+  def action_label(:approval_rejected), do: gettext("Publication rejected")
   def action_label(action) when is_atom(action), do: Atom.to_string(action)
 
   @doc "The translated label for an actor."

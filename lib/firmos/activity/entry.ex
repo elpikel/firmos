@@ -26,7 +26,10 @@ defmodule Firmos.Activity.Entry do
     :site_generated,
     :site_updated,
     :site_published,
-    :site_undone
+    :site_undone,
+    :approval_requested,
+    :approval_approved,
+    :approval_rejected
   ]
 
   @type actor :: :owner | :agent | :system
@@ -39,6 +42,9 @@ defmodule Firmos.Activity.Entry do
           | :site_updated
           | :site_published
           | :site_undone
+          | :approval_requested
+          | :approval_approved
+          | :approval_rejected
 
   @type t :: %__MODULE__{
           id: integer() | nil,

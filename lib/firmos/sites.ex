@@ -26,7 +26,8 @@ defmodule Firmos.Sites do
   (`publish/2`): the site's `published_version` is what customers see at
   `<slug>.<base domain>`, read through the one unscoped, public function
   `get_published_by_slug/1`. Later edits stay a draft until the owner
-  publishes again.
+  publishes again. An approved agent request (`Firmos.Approvals`)
+  publishes its version through `publish_version/4`.
 
   The owner can undo the latest site change from the activity log
   (`undoable_entry_id/2`, `undo/3`): the previous version's content comes
@@ -355,14 +356,77 @@ defmodule Firmos.Sites do
       with {:ok, site} <- lock_site(scope, site_id),
            {:ok, version} <- current_version(site),
            :ok <- ensure_slug(site) do
-        if published?(site) and site.published_version_id == version.id do
-          {:ok, site}
-        else
-          store_publication(scope, site, version)
-        end
+        publish_locked(scope, site, version)
       end
     end)
     |> broadcast_ok()
+  end
+
+  @doc """
+  Publishes version `version_id` of the company's site, if the owner's
+  `authorize` agrees and it is still the site's current version (e.g. an
+  approved publish request, `Firmos.Approvals.approve/2`).
+
+  Under the site's row lock and in one transaction: `authorize` is called
+  with the locked site first (an `{:error, reason}` aborts everything, so a
+  caller can re-check and record its own decision under the same lock),
+  then the version is checked and published like `publish/2` (recording
+  `site_published`), and the site is broadcast after the commit.
+
+  Refused for another owner's company (`:not_found`), when `version_id` is
+  no longer the current version (`:outdated`), without content
+  (`:no_content`) or a slug (`:slug_required`), and with `authorize`'s
+  error.
+  """
+  @spec publish_version(
+          %Scope{},
+          Company.t(),
+          integer(),
+          (Site.t() -> {:ok, term()} | {:error, term()})
+        ) ::
+          {:ok, Site.t()}
+          | {:error, :not_found | :outdated | :no_content | :slug_required | term()}
+  def publish_version(%Scope{} = scope, %Company{id: company_id}, version_id, authorize)
+      when is_integer(version_id) and is_function(authorize, 1) do
+    Repo.transact(fn ->
+      with {:ok, site} <- lock_company_site(scope, company_id),
+           {:ok, _authorized} <- authorize.(site),
+           {:ok, version} <- current_version(site),
+           :ok <- ensure_version(version, version_id),
+           :ok <- ensure_slug(site) do
+        publish_locked(scope, site, version)
+      end
+    end)
+    |> broadcast_ok()
+  end
+
+  defp ensure_version(%Version{id: version_id}, version_id), do: :ok
+  defp ensure_version(%Version{}, _other), do: {:error, :outdated}
+
+  # The caller holds the site's lock.
+  defp publish_locked(scope, site, version) do
+    if published?(site) and site.published_version_id == version.id do
+      {:ok, site}
+    else
+      store_publication(scope, site, version)
+    end
+  end
+
+  @doc """
+  Version `number` of the company's site, for the owner's preview. Raises
+  `Ecto.NoResultsError` (a 404) for an unknown number or another owner's
+  company.
+  """
+  @spec get_version!(%Scope{}, Company.t(), integer()) :: Version.t()
+  def get_version!(%Scope{user: %{id: user_id}}, %Company{id: company_id}, number)
+      when is_integer(number) do
+    from(v in Version, as: :version)
+    |> join(:inner, [version: v], s in assoc(v, :site), as: :site)
+    |> join(:inner, [site: s], c in assoc(s, :company), as: :company)
+    |> where([version: v], v.number == ^number)
+    |> where([site: s], s.company_id == ^company_id)
+    |> where([company: c], c.user_id == ^user_id)
+    |> Repo.one!()
   end
 
   defp store_publication(scope, site, version) do
@@ -706,8 +770,11 @@ defmodule Firmos.Sites do
   defp ensure_slug(%Site{slug: slug}) when is_binary(slug), do: :ok
   defp ensure_slug(%Site{}), do: {:error, :slug_required}
 
+  # FOR NO KEY UPDATE, not FOR UPDATE: it still serializes generation
+  # requests, but doesn't conflict with the FOR KEY SHARE locks inserts
+  # referencing the company (sites, activities, approvals) take for the FK.
   defp lock_company(%Scope{user: %{id: user_id}}, company_id) do
-    from(c in Company, as: :company, lock: "FOR UPDATE")
+    from(c in Company, as: :company, lock: "FOR NO KEY UPDATE")
     |> where([company: c], c.id == ^company_id and c.user_id == ^user_id)
     |> Repo.one()
     |> case do
