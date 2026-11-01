@@ -55,6 +55,11 @@ config :firmos, Oban,
   queues: [ai: 5],
   plugins: [Oban.Plugins.Pruner, {Oban.Plugins.Lifeline, rescue_after: :timer.minutes(45)}]
 
+# Published sites are served on `<slug>.<sites_base_domain>`
+# (FirmosWeb.Plugs.SiteHost, #19). `localhost` in dev and test, so a site is
+# at http://piekarnia.localhost:4000; prod sets it in config/runtime.exs.
+config :firmos, :sites_base_domain, "localhost"
+
 # Configure the endpoint
 config :firmos, FirmosWeb.Endpoint,
   url: [host: "localhost"],

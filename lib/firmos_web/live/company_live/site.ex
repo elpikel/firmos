@@ -1,13 +1,14 @@
 defmodule FirmosWeb.CompanyLive.Site do
   @moduledoc """
   The company's website section: "create website" (enabled once the current
-  business plan is ready), the generation's progress or failure, and the
-  current draft with a link to its preview.
+  business plan is ready), the generation's progress or failure, the
+  current draft with links to its preview and editor, the site's address
+  (slug) and publishing.
 
   The company is loaded through the owner's scope, so another owner's
-  company id is a 404. The only action works on the company held in the
-  socket, never on an id sent by the client, and `Firmos.Sites` re-checks
-  ownership and the ready plan. The page follows the generation and the
+  company id is a 404. Every action works on the company and site held in
+  the socket, never on an id sent by the client, and `Firmos.Sites`
+  re-checks ownership (and the ready plan, slug and content). The page follows the generation and the
   plan live through `Firmos.Sites.subscribe/2` and `Firmos.Plans.subscribe/2`.
   """
   use FirmosWeb, :live_view
@@ -16,6 +17,7 @@ defmodule FirmosWeb.CompanyLive.Site do
   alias Firmos.Plans
   alias Firmos.Sites
   alias Firmos.Sites.Version
+  alias FirmosWeb.SiteDomain
 
   @impl true
   def mount(%{"id" => id}, _session, socket) do
@@ -56,6 +58,53 @@ defmodule FirmosWeb.CompanyLive.Site do
     {:noreply, load(socket)}
   end
 
+  def handle_event("validate_slug", %{"site" => params}, %{assigns: %{site: %{} = site}} = socket) do
+    form =
+      site
+      |> Sites.change_slug(params)
+      |> Map.put(:action, :validate)
+      |> to_form()
+
+    {:noreply, assign(socket, :slug_form, form)}
+  end
+
+  def handle_event(
+        "save_slug",
+        %{"site" => %{"slug" => slug}},
+        %{assigns: %{site: %{} = site}} = socket
+      )
+      when is_binary(slug) do
+    case Sites.set_slug(socket.assigns.current_scope, site, slug) do
+      {:ok, _site} ->
+        {:noreply, socket |> put_flash(:info, gettext("Website address saved.")) |> load()}
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:noreply, assign(socket, :slug_form, to_form(changeset))}
+
+      {:error, _reason} ->
+        {:noreply, socket |> put_flash(:error, gettext("Could not save the address.")) |> load()}
+    end
+  end
+
+  def handle_event("publish", _params, %{assigns: %{site: %{} = site}} = socket) do
+    socket =
+      case Sites.publish(socket.assigns.current_scope, site) do
+        {:ok, _site} ->
+          put_flash(socket, :info, gettext("Your website is published."))
+
+        {:error, :slug_required} ->
+          put_flash(socket, :error, gettext("Choose your website's address before publishing."))
+
+        {:error, :no_content} ->
+          put_flash(socket, :error, gettext("There is no website draft to publish yet."))
+
+        {:error, _reason} ->
+          put_flash(socket, :error, gettext("Could not publish your website."))
+      end
+
+    {:noreply, load(socket)}
+  end
+
   # Forged or stale events change nothing.
   def handle_event(_event, _params, socket), do: {:noreply, socket}
 
@@ -74,6 +123,11 @@ defmodule FirmosWeb.CompanyLive.Site do
     site = Sites.get_site(scope, company)
 
     socket
+    |> assign(:site, site)
+    |> assign(:slug_form, site && site |> Sites.change_slug() |> to_form())
+    |> assign(:public_url, public_url(site))
+    |> assign(:published?, Sites.published?(site))
+    |> assign(:unpublished_changes?, Sites.unpublished_changes?(site))
     |> assign(:plan_ready?, match?({:ok, _plan}, Plans.ready_plan(scope, company)))
     |> assign(:draft, draft(site))
     |> assign(:in_progress?, Sites.generation_in_progress?(site))
@@ -82,6 +136,9 @@ defmodule FirmosWeb.CompanyLive.Site do
 
   defp draft(%{current_version: %Version{} = version}), do: version
   defp draft(_no_site_or_no_version), do: nil
+
+  defp public_url(%{slug: slug}) when is_binary(slug), do: SiteDomain.public_url(slug)
+  defp public_url(_no_site_or_no_slug), do: nil
 
   @impl true
   def render(assigns) do
@@ -214,18 +271,118 @@ defmodule FirmosWeb.CompanyLive.Site do
             <p class="text-sm text-zinc-500">
               {gettext("Hero, offer, pricing and contact sections are ready.")}
             </p>
-            <.link
-              id="site-preview-link"
-              href={~p"/companies/#{@company.id}/site/preview"}
-              target="_blank"
-              rel="noopener"
-              class="inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 px-3 py-1.5 text-sm font-medium text-zinc-700 transition hover:border-zinc-300 hover:bg-zinc-50"
-            >
-              <.icon name="hero-eye" class="size-4" />
-              {gettext("Preview")}
-            </.link>
+            <div class="flex flex-wrap items-center gap-2">
+              <.link
+                id="site-edit-link"
+                navigate={~p"/companies/#{@company.id}/site/edit"}
+                class="inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 px-3 py-1.5 text-sm font-medium text-zinc-700 transition hover:border-zinc-300 hover:bg-zinc-50"
+              >
+                <.icon name="hero-pencil-square" class="size-4" />
+                {gettext("Edit")}
+              </.link>
+              <.link
+                id="site-preview-link"
+                href={~p"/companies/#{@company.id}/site/preview"}
+                target="_blank"
+                rel="noopener"
+                class="inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 px-3 py-1.5 text-sm font-medium text-zinc-700 transition hover:border-zinc-300 hover:bg-zinc-50"
+              >
+                <.icon name="hero-eye" class="size-4" />
+                {gettext("Preview")}
+              </.link>
+            </div>
           </div>
         </article>
+
+        <section
+          :if={@draft}
+          id="site-publishing"
+          class="space-y-6 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm"
+        >
+          <div class="flex flex-wrap items-start justify-between gap-4">
+            <div class="space-y-1">
+              <h2 class="text-base font-semibold text-zinc-900">{gettext("Publishing")}</h2>
+              <p id="site-publish-status" class="text-sm text-zinc-500">
+                <%= cond do %>
+                  <% @unpublished_changes? -> %>
+                    <span
+                      id="site-unpublished-changes"
+                      class="inline-flex items-center gap-1.5 font-medium text-amber-700"
+                    >
+                      <span class="size-2 rounded-full bg-amber-500"></span>
+                      {gettext("The draft has changes customers don't see yet.")}
+                    </span>
+                  <% @published? -> %>
+                    <span class="inline-flex items-center gap-1.5 font-medium text-emerald-700">
+                      <span class="size-2 rounded-full bg-emerald-500"></span>
+                      {gettext("Published and up to date.")}
+                    </span>
+                  <% true -> %>
+                    {gettext("Not published yet. Only you can see the draft.")}
+                <% end %>
+              </p>
+              <a
+                :if={@published? and @public_url}
+                id="site-public-url"
+                href={@public_url}
+                target="_blank"
+                rel="noopener"
+                class="inline-flex items-center gap-1 text-sm font-semibold text-zinc-900 underline-offset-4 transition hover:underline"
+              >
+                {@public_url}
+                <.icon name="hero-arrow-top-right-on-square" class="size-4" />
+              </a>
+            </div>
+            <button
+              :if={not @published? or @unpublished_changes?}
+              id="site-publish"
+              type="button"
+              phx-click="publish"
+              phx-disable-with={gettext("Publishing...")}
+              class="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-500 active:scale-[0.98]"
+            >
+              <.icon name="hero-rocket-launch" class="size-4" />
+              {if @published?, do: gettext("Publish changes"), else: gettext("Publish")}
+            </button>
+          </div>
+
+          <.form
+            for={@slug_form}
+            id="site-slug-form"
+            phx-change="validate_slug"
+            phx-submit="save_slug"
+            class="space-y-2 border-t border-zinc-100 pt-6"
+          >
+            <div class="flex flex-wrap items-end gap-3">
+              <div class="min-w-0 flex-1">
+                <.input
+                  field={@slug_form[:slug]}
+                  type="text"
+                  label={gettext("Website address")}
+                  placeholder="piekarnia"
+                  autocomplete="off"
+                  phx-debounce="300"
+                />
+              </div>
+              <span class="pb-4 text-sm text-zinc-500">.{SiteDomain.base_domain()}</span>
+              <div class="pb-2">
+                <button
+                  id="site-slug-save"
+                  type="submit"
+                  phx-disable-with={gettext("Saving...")}
+                  class="inline-flex items-center gap-1.5 rounded-lg bg-zinc-900 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-zinc-700 active:scale-[0.98]"
+                >
+                  {gettext("Save address")}
+                </button>
+              </div>
+            </div>
+            <p class="text-xs text-zinc-500">
+              {gettext(
+                "Lowercase letters, digits and hyphens. Changing the address of a published website moves it: the old address stops working."
+              )}
+            </p>
+          </.form>
+        </section>
 
         <div
           :if={@plan_ready? and is_nil(@draft) and not @in_progress? and not @failed?}

@@ -40,6 +40,14 @@ defmodule Firmos.Sites.Content.Contact do
   @spec changeset(t(), map()) :: Ecto.Changeset.t()
   def changeset(contact, attrs), do: Text.cast_text(contact, attrs, @limits, [:title, :text])
 
+  @doc """
+  The owner's edit: the title and text only. The email, phone and city come
+  from the company profile and are never cast from the form.
+  """
+  @spec edit_changeset(t(), map()) :: Ecto.Changeset.t()
+  def edit_changeset(contact, attrs),
+    do: Text.cast_text(contact, attrs, Map.take(@limits, [:title, :text]), [:title, :text])
+
   @doc "A `mailto:` URL for a plain email address, else `nil`."
   @spec mailto(String.t() | nil) :: String.t() | nil
   def mailto(email) when is_binary(email) do

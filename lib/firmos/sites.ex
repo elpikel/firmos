@@ -21,8 +21,15 @@ defmodule Firmos.Sites do
   generation can store its result or fail it, so a stale job that wakes up
   after the owner asked again can't overwrite the newer generation.
 
-  Every generation status change is broadcast on the company's site topic
-  (see `subscribe/2`) after it commits.
+  The owner edits the current version's text (`update_content/3`: a new
+  `edited` version), chooses the site's slug (`set_slug/3`) and publishes
+  (`publish/2`): the site's `published_version` is what customers see at
+  `<slug>.<base domain>`, read through the one unscoped, public function
+  `get_published_by_slug/1`. Later edits stay a draft until the owner
+  publishes again.
+
+  Every change to a site (generation status, content, slug, publication) is
+  broadcast on the company's site topic (see `subscribe/2`) after it commits.
   """
   import Ecto.Query, warn: false
 
@@ -46,7 +53,8 @@ defmodule Firmos.Sites do
   @stale_after_minutes 120
 
   @typedoc """
-  The message `subscribe/2` delivers after a site changes.
+  The message `subscribe/2` delivers after a site changes (re-read the site
+  for anything beyond these fields).
   """
   @type update_message ::
           {:site_updated,
@@ -79,6 +87,154 @@ defmodule Firmos.Sites do
     |> where([company: c], c.user_id == ^user_id)
     |> preload(:current_version)
     |> Repo.one()
+  end
+
+  @doc """
+  A changeset of the site's current content with the owner's `attrs`
+  applied, for the editor form (see `Firmos.Sites.Content.edit_changeset/2`).
+  """
+  @spec change_content(Site.t(), map()) :: Ecto.Changeset.t()
+  def change_content(%Site{current_version: %Version{content: content}}, attrs \\ %{}) do
+    Content.edit_changeset(content, attrs)
+  end
+
+  @doc """
+  Saves the owner's edit of the site's content.
+
+  Under the site's row lock, applies `attrs` to the CURRENT version's
+  content and, when a field changed, in one transaction inserts version n+1
+  (source `edited`), makes it the current version and records
+  `site_updated` (subject the version, metadata the version number and the
+  changed `"section.field"` paths). Nothing changed → the site is returned
+  as it is: no version, no entry. The published version is untouched until
+  `publish/2`.
+
+  Refused while a generation is in progress (`:generation_in_progress`),
+  without content (`:no_content`), for another owner's site (`:not_found`),
+  and with the content changeset when the edit is invalid.
+  """
+  @spec update_content(%Scope{}, Site.t(), map()) ::
+          {:ok, Site.t()}
+          | {:error, :not_found | :no_content | :generation_in_progress | Ecto.Changeset.t()}
+  def update_content(%Scope{} = scope, %Site{id: site_id}, attrs) when is_map(attrs) do
+    Repo.transact(fn ->
+      with {:ok, site} <- lock_site(scope, site_id),
+           :ok <- ensure_not_in_progress(site),
+           {:ok, current} <- current_version(site),
+           {:ok, content} <-
+             current.content
+             |> Content.edit_changeset(attrs)
+             |> Ecto.Changeset.apply_action(:update) do
+        case Content.changed_paths(current.content, content) do
+          [] -> {:ok, site}
+          fields -> store_edit(scope, site, content, fields)
+        end
+      end
+    end)
+    |> broadcast_ok()
+  end
+
+  defp store_edit(scope, site, content, fields) do
+    with {:ok, {updated_site, version}} <- insert_version(site, content, :edited),
+         {:ok, _entry} <-
+           Activity.record(site.company, scope, :site_updated,
+             subject: {"site_version", version.id},
+             metadata: %{"version" => version.number, "fields" => fields}
+           ) do
+      {:ok, %{updated_site | current_version: version}}
+    end
+  end
+
+  @doc "A changeset of the site's slug for the slug form."
+  @spec change_slug(Site.t(), map()) :: Ecto.Changeset.t()
+  def change_slug(%Site{} = site, attrs \\ %{}), do: Site.slug_changeset(site, attrs)
+
+  @doc """
+  Sets the site's slug, the label of its public address. The input is
+  trimmed and downcased; an invalid, reserved or taken slug (in any letter
+  case) is `{:error, changeset}`. Changing the slug of a published site
+  moves it to the new address at once: the old one answers 404.
+  """
+  @spec set_slug(%Scope{}, Site.t(), String.t()) ::
+          {:ok, Site.t()} | {:error, :not_found | Ecto.Changeset.t()}
+  def set_slug(%Scope{} = scope, %Site{id: site_id}, slug) when is_binary(slug) do
+    Repo.transact(fn ->
+      with {:ok, site} <- lock_site(scope, site_id) do
+        site |> Site.slug_changeset(%{"slug" => slug}) |> Repo.update()
+      end
+    end)
+    |> broadcast_ok()
+  end
+
+  @doc """
+  Publishes the site's current version at its slug's address.
+
+  Under the site's row lock and in one transaction: the current version
+  becomes the published one, the site `published`, and `site_published` is
+  recorded (subject the version, metadata the slug and version number).
+  Publishing the version that is already published changes nothing.
+
+  Refused without a current version (`:no_content`), without a slug
+  (`:slug_required`) and for another owner's site (`:not_found`).
+  """
+  @spec publish(%Scope{}, Site.t()) ::
+          {:ok, Site.t()}
+          | {:error, :not_found | :no_content | :slug_required | Ecto.Changeset.t()}
+  def publish(%Scope{} = scope, %Site{id: site_id}) do
+    Repo.transact(fn ->
+      with {:ok, site} <- lock_site(scope, site_id),
+           {:ok, version} <- current_version(site),
+           :ok <- ensure_slug(site) do
+        if published?(site) and site.published_version_id == version.id do
+          {:ok, site}
+        else
+          store_publication(scope, site, version)
+        end
+      end
+    end)
+    |> broadcast_ok()
+  end
+
+  defp store_publication(scope, site, version) do
+    with {:ok, published} <- site |> Site.publish_changeset() |> Repo.update(),
+         {:ok, _entry} <-
+           Activity.record(site.company, scope, :site_published,
+             subject: {"site_version", version.id},
+             metadata: %{"slug" => published.slug, "version" => version.number}
+           ) do
+      {:ok, published}
+    end
+  end
+
+  @doc "Whether customers can see the site."
+  @spec published?(Site.t() | nil) :: boolean()
+  def published?(%Site{status: :published}), do: true
+  def published?(_draft_or_nil), do: false
+
+  @doc "Whether the draft differs from what is published (always false before publishing)."
+  @spec unpublished_changes?(Site.t() | nil) :: boolean()
+  def unpublished_changes?(%Site{} = site),
+    do: published?(site) and site.current_version_id != site.published_version_id
+
+  def unpublished_changes?(nil), do: false
+
+  @doc """
+  The published site at `slug` with its published version and company
+  preloaded, for the public page. Unscoped: anyone may read a published
+  site. A site that was never published is `{:error, :not_found}`, like an
+  unknown slug.
+  """
+  @spec get_published_by_slug(String.t()) :: {:ok, Site.t()} | {:error, :not_found}
+  def get_published_by_slug(slug) when is_binary(slug) do
+    from(s in Site, as: :site)
+    |> where([site: s], s.slug == ^slug and s.status == :published)
+    |> where([site: s], not is_nil(s.published_version_id))
+    |> preload([:company, :published_version])
+    |> Repo.one()
+    |> case do
+      nil -> {:error, :not_found}
+      site -> {:ok, site}
+    end
   end
 
   @doc """
@@ -296,10 +452,18 @@ defmodule Firmos.Sites do
            site.id
            |> Version.new_changeset(next_number(site.id), content, source)
            |> Repo.insert(),
-         {:ok, updated_site} <- site |> Site.current_version_changeset(version) |> Repo.update() do
+         {:ok, updated_site} <- site |> pointer_changeset(version, source) |> Repo.update() do
       {:ok, {updated_site, version}}
     end
   end
+
+  # A generated version also ends its generation; an owner's edit leaves
+  # the generation status (e.g. a failed regeneration) as it is.
+  defp pointer_changeset(site, version, :generated),
+    do: Site.current_version_changeset(site, version)
+
+  defp pointer_changeset(site, version, _owner),
+    do: Site.current_version_pointer_changeset(site, version)
 
   defp next_number(site_id) do
     from(v in Version, as: :version)
@@ -340,6 +504,27 @@ defmodule Firmos.Sites do
   defp ensure_not_in_progress(site) do
     if generation_in_progress?(site), do: {:error, :generation_in_progress}, else: :ok
   end
+
+  # The owner's site, locked, with its company and current version.
+  defp lock_site(%Scope{user: %{id: user_id}}, site_id) do
+    owned_company_ids =
+      from(c in Company, as: :company, where: c.user_id == ^user_id, select: c.id)
+
+    from(s in Site, as: :site, lock: "FOR UPDATE")
+    |> where([site: s], s.id == ^site_id)
+    |> where([site: s], s.company_id in subquery(owned_company_ids))
+    |> Repo.one()
+    |> case do
+      nil -> {:error, :not_found}
+      site -> {:ok, Repo.preload(site, [:company, :current_version])}
+    end
+  end
+
+  defp current_version(%Site{current_version: %Version{} = version}), do: {:ok, version}
+  defp current_version(%Site{}), do: {:error, :no_content}
+
+  defp ensure_slug(%Site{slug: slug}) when is_binary(slug), do: :ok
+  defp ensure_slug(%Site{}), do: {:error, :slug_required}
 
   defp lock_company(%Scope{user: %{id: user_id}}, company_id) do
     from(c in Company, as: :company, lock: "FOR UPDATE")

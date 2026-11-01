@@ -365,6 +365,167 @@ defmodule Firmos.SitesTest do
     end
   end
 
+  describe "update_content/3" do
+    setup %{scope: scope, company: company} do
+      %{site: generated_site(scope, company)}
+    end
+
+    test "leaves the published version and the generation status alone",
+         %{scope: scope, company: company, site: site} do
+      {:ok, site} = Sites.set_slug(scope, site, "piekarnia")
+      {:ok, published} = Sites.publish(scope, site)
+
+      Repo.update_all(from(s in Site, where: s.id == ^site.id),
+        set: [generation_status: :failed, generation_error: "timeout"]
+      )
+
+      {:ok, edited} =
+        Sites.update_content(scope, published, %{"hero" => %{"headline" => "Nowy"}})
+
+      assert %{
+               published_version_id: published_id,
+               generation_status: :failed,
+               current_version: %{number: 2}
+             } = edited
+
+      assert published_id == published.published_version_id
+      assert Sites.unpublished_changes?(Sites.get_site(scope, company))
+    end
+
+    test "records every changed field, items as one", %{scope: scope, site: site} do
+      attrs = %{
+        "offer" => %{"items" => %{"0" => %{"name" => "Bagietki", "description" => "Chrupiące."}}},
+        "contact" => %{"text" => "Zadzwoń!"}
+      }
+
+      {:ok, edited} = Sites.update_content(scope, site, attrs)
+      entry = Repo.get_by!(Firmos.Activity.Entry, subject_id: edited.current_version_id)
+
+      assert entry.metadata == %{"version" => 2, "fields" => ["offer.items", "contact.text"]}
+      assert [%{name: "Bagietki"}] = edited.current_version.content.offer.items
+    end
+
+    test "an unchanged edit stores no version and no activity",
+         %{scope: scope, company: company, site: site} do
+      headline = site.current_version.content.hero.headline
+
+      assert {:ok, %{current_version_id: id}} =
+               Sites.update_content(scope, site, %{"hero" => %{"headline" => headline}})
+
+      assert id == site.current_version_id
+      refute Enum.any?(Activity.list_for_company(scope, company), &(&1.action == :site_updated))
+    end
+
+    test "never casts the contact email or city from the edit", %{scope: scope, site: site} do
+      contact = site.current_version.content.contact
+
+      {:ok, edited} =
+        Sites.update_content(scope, site, %{
+          "contact" => %{"text" => "Nowy tekst", "email" => "evil@example.com", "city" => "X"}
+        })
+
+      assert %{email: email, city: city, text: "Nowy tekst"} =
+               edited.current_version.content.contact
+
+      assert {email, city} == {contact.email, contact.city}
+    end
+
+    test "returns the content changeset for an invalid edit", %{scope: scope, site: site} do
+      assert {:error, %Ecto.Changeset{valid?: false}} =
+               Sites.update_content(scope, site, %{"hero" => %{"headline" => ""}})
+    end
+
+    test "refuses while a generation is in progress",
+         %{scope: scope, company: company, site: site} do
+      {:ok, _pending} = Sites.request_generation(scope, company)
+
+      assert {:error, :generation_in_progress} =
+               Sites.update_content(scope, site, %{"hero" => %{"headline" => "Nowy"}})
+    end
+  end
+
+  describe "set_slug/3" do
+    setup %{scope: scope, company: company} do
+      %{site: generated_site(scope, company)}
+    end
+
+    for {slug, field_error} <- [
+          {"ab", "should be at least %{count} character(s)"},
+          {"-piekarnia",
+           "may only contain lowercase letters, digits and hyphens, not at the start or end"},
+          {"piekarnia_krakow",
+           "may only contain lowercase letters, digits and hyphens, not at the start or end"},
+          {"api", "is reserved"},
+          {"xn--pekarnia-9ib", "can't start with xn--"},
+          {"   ", "can't be blank"}
+        ] do
+      test "rejects #{inspect(slug)}", %{scope: scope, site: site} do
+        assert {:error, %Ecto.Changeset{errors: [slug: {unquote(field_error), _}]}} =
+                 Sites.set_slug(scope, site, unquote(slug))
+      end
+    end
+
+    test "moving a published site frees its old slug", %{scope: scope, site: site} do
+      {:ok, site} = Sites.set_slug(scope, site, "piekarnia")
+      {:ok, site} = Sites.publish(scope, site)
+      {:ok, _moved} = Sites.set_slug(scope, site, "piekarnia-krakow")
+
+      assert {:error, :not_found} = Sites.get_published_by_slug("piekarnia")
+      assert {:ok, _site} = Sites.get_published_by_slug("piekarnia-krakow")
+    end
+  end
+
+  describe "publish/2" do
+    test "refuses a site without content", %{scope: scope, company: company} do
+      site = request!(scope, company)
+      {:ok, site} = Sites.set_slug(scope, site, "piekarnia")
+
+      assert {:error, :no_content} = Sites.publish(scope, site)
+    end
+
+    test "refuses a site without a slug", %{scope: scope, company: company} do
+      assert {:error, :slug_required} = Sites.publish(scope, generated_site(scope, company))
+    end
+
+    test "republishing the published version records nothing",
+         %{scope: scope, company: company} do
+      {:ok, site} = Sites.set_slug(scope, generated_site(scope, company), "piekarnia")
+      {:ok, site} = Sites.publish(scope, site)
+      {:ok, _site} = Sites.publish(scope, site)
+
+      assert [_one] =
+               Enum.filter(
+                 Activity.list_for_company(scope, company),
+                 &(&1.action == :site_published)
+               )
+    end
+
+    test "broadcasts the published site", %{scope: scope, company: company} do
+      {:ok, site} = Sites.set_slug(scope, generated_site(scope, company), "piekarnia")
+      :ok = Sites.subscribe(scope, company)
+      {:ok, _site} = Sites.publish(scope, site)
+
+      assert_receive {:site_updated, %{id: id}} when id == site.id
+    end
+  end
+
+  describe "get_published_by_slug/1" do
+    test "doesn't return a draft site", %{scope: scope, company: company} do
+      {:ok, _site} = Sites.set_slug(scope, generated_site(scope, company), "piekarnia")
+
+      assert {:error, :not_found} = Sites.get_published_by_slug("piekarnia")
+    end
+
+    test "serves the published version, not the newer draft",
+         %{scope: scope, company: company} do
+      {:ok, site} = Sites.set_slug(scope, generated_site(scope, company), "piekarnia")
+      {:ok, site} = Sites.publish(scope, site)
+      {:ok, _edited} = Sites.update_content(scope, site, %{"hero" => %{"headline" => "Nowy"}})
+
+      assert {:ok, %{published_version: %{number: 1}}} = Sites.get_published_by_slug("piekarnia")
+    end
+  end
+
   describe "sites table" do
     test "deleting the company deletes its site and versions", %{scope: scope, company: company} do
       generated_site(scope, company)

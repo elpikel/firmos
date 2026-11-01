@@ -80,6 +80,34 @@ if config_env() == :prod do
 
   config :firmos, :dns_cluster_query, System.get_env("DNS_CLUSTER_QUERY")
 
+  # Published sites live on `<slug>.<SITES_BASE_DOMAIN>` (e.g. firmos.pl);
+  # the DNS needs a wildcard record for it. Defaults to the app's host.
+  normalize_domain = fn domain ->
+    domain |> String.trim() |> String.downcase() |> String.trim_trailing(".")
+  end
+
+  sites_base_domain =
+    case normalize_domain.(System.get_env("SITES_BASE_DOMAIN", "")) do
+      "" -> normalize_domain.(host)
+      domain -> domain
+    end
+
+  # The app may live on the bare base domain or a platform label (www, app),
+  # never on a name an owner could claim as a slug. (Kept in sync by hand
+  # with Firmos.Sites.Slug: app modules aren't loaded while this file runs.)
+  app_label = String.replace_suffix(normalize_domain.(host), "." <> sites_base_domain, "")
+
+  if app_label != normalize_domain.(host) and not String.contains?(app_label, ".") and
+       app_label not in ~w(www app) do
+    raise """
+    PHX_HOST (#{host}) is a single label under SITES_BASE_DOMAIN (#{sites_base_domain}),
+    so a company could claim "#{app_label}" as its slug. Run the app on the bare
+    domain or on www./app.#{sites_base_domain}, or use another SITES_BASE_DOMAIN.
+    """
+  end
+
+  config :firmos, :sites_base_domain, sites_base_domain
+
   config :firmos, FirmosWeb.Endpoint,
     url: [host: host, port: 443, scheme: "https"],
     http: [

@@ -7,6 +7,7 @@ defmodule Firmos.Sites.Content do
   `FirmosWeb.SiteComponents.landing/1`, which escapes every field.
   `from_json/2` is the one way in for AI output: it decodes the raw text and
   checks every section, so a version is never stored half-formed.
+  `edit_changeset/2` is the one way in for the owner's edits (STORY-009).
   """
   use Ecto.Schema
 
@@ -29,6 +30,8 @@ defmodule Firmos.Sites.Content do
   `%{"email" => company.contact_email, "phone" => nil, "city" => company.city}`.
   """
   @type contact_details :: %{optional(String.t()) => String.t() | nil}
+
+  @sections [:hero, :offer, :pricing, :contact]
 
   @primary_key false
   embedded_schema do
@@ -56,6 +59,35 @@ defmodule Firmos.Sites.Content do
     end
   end
 
+  @doc """
+  The owner's edit of `content`: every text field except the contact
+  email, phone and city, which come from the company profile. The params
+  are merged onto the existing sections, so a section left out stays as it
+  is; a list of items sent replaces the stored list.
+  """
+  @spec edit_changeset(t(), map()) :: Ecto.Changeset.t()
+  def edit_changeset(%__MODULE__{} = content, attrs) when is_map(attrs) do
+    changeset(content, attrs, &Contact.edit_changeset/2)
+  end
+
+  @doc """
+  The `"section.field"` paths whose value differs between `old` and `new`
+  (a list of items counts as one field), in section order.
+  """
+  @spec changed_paths(t(), t()) :: [String.t()]
+  def changed_paths(%__MODULE__{} = old, %__MODULE__{} = new) do
+    Enum.flat_map(@sections, fn section ->
+      old
+      |> Map.fetch!(section)
+      |> changed_fields(Map.fetch!(new, section))
+      |> Enum.map(&"#{section}.#{&1}")
+    end)
+  end
+
+  defp changed_fields(%module{} = old, %module{} = new) do
+    Enum.reject(module.__schema__(:fields), &(Map.fetch!(old, &1) == Map.fetch!(new, &1)))
+  end
+
   defp put_contact_details(%{"contact" => %{} = contact} = attrs, details),
     do: %{attrs | "contact" => Map.merge(contact, details)}
 
@@ -71,13 +103,13 @@ defmodule Firmos.Sites.Content do
     end
   end
 
-  defp changeset(content, attrs) do
+  defp changeset(content, attrs, contact_changeset \\ &Contact.changeset/2) do
     content
     |> cast(attrs, [])
     |> cast_embed(:hero, required: true)
     |> cast_embed(:offer, required: true)
     |> cast_embed(:pricing, required: true)
-    |> cast_embed(:contact, required: true)
+    |> cast_embed(:contact, required: true, with: contact_changeset)
   end
 
   defp strip_code_fence(text) do
