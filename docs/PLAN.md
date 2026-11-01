@@ -147,3 +147,19 @@ Executable checklist for `/build-loop`. Top-to-bottom = dependency order.
   `story: STORY-009` · `depends-on: T2` · `parallel-group: —`
 - [x] **T6 · translations: pl** — `mix gettext.extract --merge`; translate every new msgid. Acceptance: full feature spec green, `mix precommit` clean.
   `story: STORY-009` · `depends-on: T3, T4, T5` · `parallel-group: —`
+
+### STORY-010 — Undo a change (#20)
+
+> Decisions (#20): No migration: the `site_undone` action and the `undo` version source exist since #18. Site-changing entries are `site_generated` / `site_updated` / `site_published` / `site_undone` (subject `{"site_version", id}`). Only the company's LATEST site-changing entry is undoable, and only when it isn't a `site_undone` (no redo), its subject is still the current version, a lower-numbered version exists and no generation is in progress: `Sites.undoable_entry_id/2` (for the UI) and `Sites.undo/3` share one private rule. `Sites.undo/3` locks the owner's site (by company), fetches the entry through `Activity.fetch_entry/3` (another company's id → `:not_found`), refuses while generating, re-checks the rule under the lock (`:not_undoable` otherwise, so a double click or a stale button does nothing), inserts version n+1 (source `undo`) with the previous version's content, moves `current_version_id`, and — only when the undone change was live (`published_version_id == current_version_id`) — also publishes the new version; records `site_undone` (owner, subject the new version, metadata `version`, `restored_from_version`, `reverts_entry_id`, `reverts_entry_at`) and broadcasts. The activity LiveView subscribes to site changes and re-streams its first page when the undoable entry changes; `ActivityComponents.activity_entry/1` gains an `:actions` slot (the LiveView renders `#undo-entry-<id>` in it) and a `site_undone` summary linking to `#activities-<reverted id>`. Lost-update fix from #19: `Sites.update_content/3` treats the passed site's `current_version_id` (the editor's socket-held base, set at mount) as the base and refuses with `:stale` when the site moved; `SiteEdit` subscribes and shows `#site-edit-stale`.
+> Spec: `test/features/undo_site_change_test.exs` (pending until these tasks un-skip it).
+
+- [ ] **T1 · context: undo rule + `Sites.undo/3`** — `Activity.latest_for_company/3`, `Activity.fetch_entry/3`; `Sites.undoable_entry_id/2`, `Sites.undo/3` as above. Unit tests in `test/firmos/sites_test.exs` (IDOR → `:not_found`, forged older entry → `:not_undoable`, double click, generation in progress, draft-only undo keeps the published version).
+  `story: STORY-010` · `depends-on: —` · `parallel-group: —`
+- [ ] **T2 · context: stale edit** — `Sites.update_content/3` → `{:error, :stale}` when the site's current version isn't the passed site's. Unit test.
+  `story: STORY-010` · `depends-on: —` · `parallel-group: —`
+- [ ] **T3 · web: undo in the activity log** — `ActivityComponents.activity_entry/1` `:actions` slot + `site_undone` summary (`#activities-<id>-reverts` link). `CompanyLive.Activity`: subscribe to the site, `@undoable_entry_id`, `#undo-entry-<id>` → `"undo"` event → `Sites.undo/3` (flash per error), re-stream the first page. Un-skip AC1, AC2, AC3.
+  `story: STORY-010` · `depends-on: T1` · `parallel-group: web`
+- [ ] **T4 · web: stale editor** — `CompanyLive.SiteEdit` subscribes to the site, shows `#site-edit-stale` with a reload link when the current version moves, disables save, maps `:stale` to a flash. Un-skip the stale-editor scenario.
+  `story: STORY-010` · `depends-on: T2` · `parallel-group: web`
+- [ ] **T5 · translations: pl** — `mix gettext.extract --merge`; translate every new msgid. Acceptance: full feature spec green, `mix precommit` clean.
+  `story: STORY-010` · `depends-on: T3, T4` · `parallel-group: —`
