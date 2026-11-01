@@ -119,3 +119,19 @@ msgstr "nie zostało zmienione"
 
 msgid "does not match password"
 msgstr "nie zgadza się z hasłem"
+
+## From Firmos.Ideas.Idea changeset (custom messages)
+msgid "is too short, please give more detail (at least %{count} characters)"
+msgid_plural "is too short, please give more detail (at least %{count} characters)"
+msgstr[0] "jest za krótki, podaj więcej szczegółów (co najmniej %{count} znak)"
+msgstr[1] "jest za krótki, podaj więcej szczegółów (co najmniej %{count} znaki)"
+msgstr[2] "jest za krótki, podaj więcej szczegółów (co najmniej %{count} znaków)"
+
+msgid "is too long, maximum %{count} characters"
+msgid_plural "is too long, maximum %{count} characters"
+msgstr[0] "jest za długi, maksymalnie %{count} znak"
+msgstr[1] "jest za długi, maksymalnie %{count} znaki"
+msgstr[2] "jest za długi, maksymalnie %{count} znaków"
+
+msgid "contains characters that are not allowed"
+msgstr "zawiera niedozwolone znaki"

@@ -90,6 +90,10 @@ config :logger, :default_formatter,
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
 
+# Keep secrets out of request/event logs. Matching is by substring, so "idea"
+# also covers the `?idea=<token>` draft capability and the idea form (#15).
+config :phoenix, :filter_parameters, ["password", "idea"]
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"

@@ -39,3 +39,21 @@ Executable checklist for `/build-loop`. Top-to-bottom = dependency order.
   `story: STORY-003` · `depends-on: T2` · `parallel-group: —`
 - [x] **T4 · wire: config** — `config.exs`: default adapter + Claude defaults (`base_url`, `model: "claude-sonnet-5-5"`, `max_tokens`, `receive_timeout`, retry). `test.exs`: `Firmos.AI.Mock`, `plug: {Req.Test, Firmos.AI.Claude}`, retry off, fake key. `runtime.exs`: `ANTHROPIC_API_KEY` for every env except test (required in prod, optional in dev). Acceptance: the full feature spec passes and `mix precommit` is clean.
   `story: STORY-003` · `depends-on: T3` · `parallel-group: —`
+
+## M1 — 💡 Idea → plan → site
+
+### STORY-005 — Describe the business idea (#15)
+
+> Decisions (#15): `/` becomes `FirmosWeb.HomeLive` (in the `:current_user` live_session) with one idea textarea; `PageController` is removed. The idea is persisted server-side as a draft (`Firmos.Ideas`, table `ideas`), never in the cookie session (2000 PL chars can blow the 4 KB cookie, and magic-link sign-up may finish on another device). A visitor is sent to `/users/register?idea=<token>`; the registration LiveView keeps the draft validated at mount in its assigns and `Ideas.attach_to_user/2` assigns the draft to the new user. A signed-in owner's idea is attached directly → `/dashboard`. Validation: trimmed text, 20–2000 codepoints, mirrored by a DB CHECK. `claimed_at` stays nil until STORY-006 turns the idea into a company; `Ideas.latest_unclaimed_for_user/1` is its read seam.
+> Spec: `test/features/idea_prompt_test.exs` (pending until these tasks un-skip it).
+
+- [x] **T1 · schema: `ideas` table** — `mix ecto.gen.migration create_ideas`: `text` (text, NOT NULL, CHECK `ideas_text_length` 20–2000 `char_length`), `token` (text, NOT NULL, unique index), `user_id` (nullable FK → users, `on_delete: :delete_all`, `# nullable-fk:` comment), `claimed_at` (utc_datetime), timestamps (utc_datetime); index on `user_id`. `Firmos.Ideas.Idea` schema + changeset (trim, `validate_length` with gettext-able messages, `check_constraint`, `unique_constraint`; `user_id`/`token` never cast; Inspect hides `token`).
+  `story: STORY-005` · `depends-on: —` · `parallel-group: —`
+- [x] **T2 · context: `Firmos.Ideas`** — `change_idea/1`, `create_draft/1` (random URL-safe token), `create_for_user/2` (scope), `get_draft_by_token/1` (only unattached drafts), `attach_to_user/2` (scope, token → `{:ok, idea} | {:error, :not_found}`), `latest_unclaimed_for_user/1` (scope). Unit tests in `test/firmos/ideas_test.exs` (boundaries 19/20/2000/2001, trimming, token read only while unattached).
+  `story: STORY-005` · `depends-on: T1` · `parallel-group: —`
+- [x] **T3 · wire: `/` → `FirmosWeb.HomeLive`** — Replace `get "/", PageController, :home` with `live "/", HomeLive, :index` in the `:current_user` live_session; delete `PageController`, `PageHTML` and its test. Hero copy stays around `#idea-form` (`#idea-input` textarea, `#idea-submit`). Visitor submit → `Ideas.create_draft/1` → `push_navigate` to `/users/register?idea=<token>`; owner submit → `Ideas.create_for_user/2` → `/dashboard`. Un-skip AC1, AC3, AC4.
+  `story: STORY-005` · `depends-on: T2` · `parallel-group: —`
+- [x] **T4 · wire: registration keeps the idea** — `UserLive.Registration` reads `?idea=` via `Ideas.get_draft_by_token/1`, renders `#preserved-idea` (escaped, no `raw/1`), keeps the draft in assigns (no client-supplied token on submit), and after `Accounts.register_user/1` calls `Ideas.attach_to_user/2`. Un-skip AC2.
+  `story: STORY-005` · `depends-on: T3` · `parallel-group: —`
+- [x] **T5 · translations: pl** — `mix gettext.extract --merge`; translate every new msgid in `pl/LC_MESSAGES/default.po` and `errors.po` (plural forms for the `%{count}` validation messages). Update copy-asserting tests. Acceptance: full feature spec green, `mix precommit` clean.
+  `story: STORY-005` · `depends-on: T4` · `parallel-group: —`

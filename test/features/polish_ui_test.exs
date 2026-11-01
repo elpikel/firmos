@@ -1,6 +1,6 @@
 # STORY-002 — Polish UI
 #
-# Entry point: `GET /` through the router (PageController + root layout),
+# Entry point: `GET /` through the router (HomeLive + root layout),
 # and the `FirmosWeb.Gettext` backend for the fallback behaviour.
 # Copy text is asserted here on purpose: the language IS the behaviour.
 defmodule FirmosWeb.Features.PolishUiTest do
