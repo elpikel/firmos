@@ -18,13 +18,15 @@ defmodule Firmos.Companies do
   alias Firmos.Activity
   alias Firmos.Companies.Company
   alias Firmos.Ideas
+  alias Firmos.Plans
   alias Firmos.Repo
 
   @doc """
   Turns each of the owner's unclaimed ideas into a company, oldest first, so
   the newest idea becomes the newest company. Each company gets the idea text
   as its description and `default_name` (a translated placeholder supplied by
-  the caller) as its name, and a `company_created` activity entry by the owner.
+  the caller) as its name, a `company_created` activity entry by the owner,
+  and its first business plan, queued for generation (`Firmos.Plans`).
 
   Everything runs in one transaction. Each idea is claimed with a conditional
   update that only matches while it is still unclaimed; ideas another caller
@@ -65,7 +67,8 @@ defmodule Firmos.Companies do
            |> Company.profile_changeset(%{name: default_name})
            |> Repo.insert(),
          {:ok, _entry} <-
-           Activity.record(company, scope, :company_created, metadata: %{"name" => company.name}) do
+           Activity.record(company, scope, :company_created, metadata: %{"name" => company.name}),
+         {:ok, _plan} <- Plans.start_first_plan(scope, company) do
       {:ok, company}
     end
   end

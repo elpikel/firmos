@@ -24,9 +24,10 @@ msgstr ""
 
 #: lib/firmos_web/components/layouts/root.html.heex:47
 #: lib/firmos_web/live/company_live/activity.ex:60
+#: lib/firmos_web/live/company_live/plan.ex:125
 #: lib/firmos_web/live/company_live/profile.ex:60
-#: lib/firmos_web/live/dashboard_live.ex:19
-#: lib/firmos_web/live/dashboard_live.ex:48
+#: lib/firmos_web/live/dashboard_live.ex:28
+#: lib/firmos_web/live/dashboard_live.ex:99
 #, elixir-autogen, elixir-format
 msgid "Dashboard"
 msgstr ""
@@ -44,7 +45,7 @@ msgstr ""
 msgid "Log out"
 msgstr ""
 
-#: lib/firmos_web/live/dashboard_live.ex:104
+#: lib/firmos_web/live/dashboard_live.ex:164
 #, elixir-autogen, elixir-format
 msgid "Nothing here yet"
 msgstr ""
@@ -69,13 +70,13 @@ msgstr ""
 msgid "We can't find the internet"
 msgstr ""
 
-#: lib/firmos_web/live/dashboard_live.ex:50
+#: lib/firmos_web/live/dashboard_live.ex:101
 #: lib/firmos_web/live/user_live/confirmation.ex:12
 #, elixir-autogen, elixir-format
 msgid "Welcome, %{email}"
 msgstr ""
 
-#: lib/firmos_web/live/dashboard_live.ex:106
+#: lib/firmos_web/live/dashboard_live.ex:166
 #, elixir-autogen, elixir-format
 msgid "Your firm's activity will show up here once you start using Firmos."
 msgstr ""
@@ -364,13 +365,13 @@ msgstr ""
 msgid "Your idea has been saved."
 msgstr ""
 
-#: lib/firmos_web/components/activity_components.ex:118
+#: lib/firmos_web/components/activity_components.ex:137
 #: lib/firmos_web/live/company_live/profile.ex:88
 #, elixir-autogen, elixir-format
 msgid "City"
 msgstr ""
 
-#: lib/firmos_web/components/activity_components.ex:116
+#: lib/firmos_web/components/activity_components.ex:135
 #: lib/firmos_web/live/company_live/profile.ex:86
 #, elixir-autogen, elixir-format
 msgid "Company name"
@@ -387,24 +388,24 @@ msgstr ""
 msgid "Company profile saved."
 msgstr ""
 
-#: lib/firmos_web/components/activity_components.ex:119
+#: lib/firmos_web/components/activity_components.ex:138
 #: lib/firmos_web/live/company_live/profile.ex:92
 #, elixir-autogen, elixir-format
 msgid "Contact email"
 msgstr ""
 
-#: lib/firmos_web/live/dashboard_live.ex:83
+#: lib/firmos_web/live/dashboard_live.ex:142
 #, elixir-autogen, elixir-format
 msgid "Edit profile"
 msgstr ""
 
-#: lib/firmos_web/components/activity_components.ex:117
+#: lib/firmos_web/components/activity_components.ex:136
 #: lib/firmos_web/live/company_live/profile.ex:87
 #, elixir-autogen, elixir-format
 msgid "Industry"
 msgstr ""
 
-#: lib/firmos_web/live/dashboard_live.ex:27
+#: lib/firmos_web/live/dashboard_live.ex:48
 #, elixir-autogen, elixir-format
 msgid "My company"
 msgstr ""
@@ -419,23 +420,23 @@ msgstr ""
 msgid "The basics customers will see about your company."
 msgstr ""
 
-#: lib/firmos_web/live/dashboard_live.ex:62
+#: lib/firmos_web/live/dashboard_live.ex:113
 #, elixir-autogen, elixir-format
 msgid "Your company"
 msgstr ""
 
-#: lib/firmos_web/components/activity_components.ex:129
+#: lib/firmos_web/components/activity_components.ex:148
 #, elixir-autogen, elixir-format
 msgid "%{time} UTC"
 msgstr ""
 
-#: lib/firmos_web/components/activity_components.ex:122
-#: lib/firmos_web/components/activity_components.ex:123
+#: lib/firmos_web/components/activity_components.ex:141
+#: lib/firmos_web/components/activity_components.ex:142
 #, elixir-autogen, elixir-format
 msgid "(empty)"
 msgstr ""
 
-#: lib/firmos_web/components/activity_components.ex:108
+#: lib/firmos_web/components/activity_components.ex:127
 #, elixir-autogen, elixir-format
 msgid "AI agent"
 msgstr ""
@@ -443,12 +444,12 @@ msgstr ""
 #: lib/firmos_web/live/company_live/activity.ex:23
 #: lib/firmos_web/live/company_live/activity.ex:63
 #: lib/firmos_web/live/company_live/profile.ex:68
-#: lib/firmos_web/live/dashboard_live.ex:75
+#: lib/firmos_web/live/dashboard_live.ex:134
 #, elixir-autogen, elixir-format
 msgid "Activity"
 msgstr ""
 
-#: lib/firmos_web/components/activity_components.ex:101
+#: lib/firmos_web/components/activity_components.ex:118
 #, elixir-autogen, elixir-format
 msgid "Company created"
 msgstr ""
@@ -458,7 +459,7 @@ msgstr ""
 msgid "Created the company “%{name}”."
 msgstr ""
 
-#: lib/firmos_web/components/activity_components.ex:90
+#: lib/firmos_web/components/activity_components.ex:99
 #, elixir-autogen, elixir-format
 msgid "Created the company."
 msgstr ""
@@ -473,22 +474,22 @@ msgstr ""
 msgid "No activity yet. Changes to your company will show up here."
 msgstr ""
 
-#: lib/firmos_web/components/activity_components.ex:107
+#: lib/firmos_web/components/activity_components.ex:126
 #, elixir-autogen, elixir-format
 msgid "Owner"
 msgstr ""
 
-#: lib/firmos_web/components/activity_components.ex:102
+#: lib/firmos_web/components/activity_components.ex:119
 #, elixir-autogen, elixir-format
 msgid "Profile updated"
 msgstr ""
 
-#: lib/firmos_web/components/activity_components.ex:109
+#: lib/firmos_web/components/activity_components.ex:128
 #, elixir-autogen, elixir-format
 msgid "System"
 msgstr ""
 
-#: lib/firmos_web/components/activity_components.ex:91
+#: lib/firmos_web/components/activity_components.ex:100
 #, elixir-autogen, elixir-format
 msgid "Updated the company profile."
 msgstr ""
@@ -501,4 +502,207 @@ msgstr ""
 #: lib/firmos_web/live/company_live/activity.ex:92
 #, elixir-autogen, elixir-format
 msgid "Loading..."
+msgstr ""
+
+#: lib/firmos_web/live/company_live/plan.ex:77
+#, elixir-autogen, elixir-format
+msgid "A plan is already being generated."
+msgstr ""
+
+#: lib/firmos_web/live/dashboard_live.ex:76
+#, elixir-autogen, elixir-format
+msgid "AI is preparing your business plan..."
+msgstr ""
+
+#: lib/firmos_web/live/company_live/plan.ex:32
+#: lib/firmos_web/live/company_live/plan.ex:130
+#: lib/firmos_web/live/dashboard_live.ex:126
+#, elixir-autogen, elixir-format
+msgid "Business plan"
+msgstr ""
+
+#: lib/firmos_web/live/company_live/plan.ex:222
+#, elixir-autogen, elixir-format
+msgid "Channels"
+msgstr ""
+
+#: lib/firmos_web/live/company_live/plan.ex:212
+#, elixir-autogen, elixir-format
+msgid "Competitors"
+msgstr ""
+
+#: lib/firmos_web/live/company_live/plan.ex:53
+#, elixir-autogen, elixir-format
+msgid "Could not save your rating."
+msgstr ""
+
+#: lib/firmos_web/live/company_live/plan.ex:80
+#, elixir-autogen, elixir-format
+msgid "Could not start a new plan."
+msgstr ""
+
+#: lib/firmos_web/live/company_live/plan.ex:228
+#, elixir-autogen, elixir-format
+msgid "First 30 days"
+msgstr ""
+
+#: lib/firmos_web/live/company_live/plan.ex:145
+#, elixir-autogen, elixir-format
+msgid "Generate a new version? This one will be kept."
+msgstr ""
+
+#: lib/firmos_web/live/company_live/plan.ex:149
+#, elixir-autogen, elixir-format
+msgid "Generate plan"
+msgstr ""
+
+#: lib/firmos_web/components/activity_components.ex:101
+#, elixir-autogen, elixir-format
+msgid "Generated the business plan."
+msgstr ""
+
+#: lib/firmos_web/components/activity_components.ex:108
+#, elixir-autogen, elixir-format
+msgid "Generated version %{version} of the business plan."
+msgstr ""
+
+#: lib/firmos_web/live/company_live/plan.ex:246
+#, elixir-autogen, elixir-format
+msgid "Is this plan useful?"
+msgstr ""
+
+#: lib/firmos_web/components/activity_components.ex:121
+#, elixir-autogen, elixir-format
+msgid "New plan requested"
+msgstr ""
+
+#: lib/firmos_web/live/company_live/plan.ex:163
+#, elixir-autogen, elixir-format
+msgid "No business plan yet. Generate one to see your offer, customers and first steps."
+msgstr ""
+
+#: lib/firmos_web/live/company_live/plan.ex:259
+#, elixir-autogen, elixir-format
+msgid "Not useful"
+msgstr ""
+
+#: lib/firmos_web/live/company_live/plan.ex:200
+#, elixir-autogen, elixir-format
+msgid "Offer"
+msgstr ""
+
+#: lib/firmos_web/components/activity_components.ex:120
+#, elixir-autogen, elixir-format
+msgid "Plan generated"
+msgstr ""
+
+#: lib/firmos_web/live/company_live/plan.ex:308
+#, elixir-autogen, elixir-format
+msgid "Preparing your business plan..."
+msgstr ""
+
+#: lib/firmos_web/live/company_live/plan.ex:218
+#, elixir-autogen, elixir-format
+msgid "Pricing"
+msgstr ""
+
+#: lib/firmos_web/live/company_live/plan.ex:149
+#, elixir-autogen, elixir-format
+msgid "Regenerate"
+msgstr ""
+
+#: lib/firmos_web/components/activity_components.ex:102
+#, elixir-autogen, elixir-format
+msgid "Requested a new business plan."
+msgstr ""
+
+#: lib/firmos_web/components/activity_components.ex:111
+#, elixir-autogen, elixir-format
+msgid "Requested version %{version} of the business plan."
+msgstr ""
+
+#: lib/firmos_web/live/company_live/plan.ex:144
+#: lib/firmos_web/live/company_live/plan.ex:191
+#, elixir-autogen, elixir-format
+msgid "Starting..."
+msgstr ""
+
+#: lib/firmos_web/live/company_live/plan.ex:207
+#, elixir-autogen, elixir-format
+msgid "Target customer"
+msgstr ""
+
+#: lib/firmos_web/live/company_live/plan.ex:184
+#, elixir-autogen, elixir-format
+msgid "The AI service didn't deliver a usable plan. Please try again."
+msgstr ""
+
+#: lib/firmos_web/live/company_live/plan.ex:65
+#, elixir-autogen, elixir-format
+msgid "This plan can't be retried right now."
+msgstr ""
+
+#: lib/firmos_web/live/company_live/plan.ex:311
+#, elixir-autogen, elixir-format
+msgid "This usually takes a minute or two. The page updates by itself when it's ready."
+msgstr ""
+
+#: lib/firmos_web/live/company_live/plan.ex:195
+#, elixir-autogen, elixir-format
+msgid "Try again"
+msgstr ""
+
+#: lib/firmos_web/live/company_live/plan.ex:252
+#, elixir-autogen, elixir-format
+msgid "Useful"
+msgstr ""
+
+#: lib/firmos_web/live/company_live/plan.ex:268
+#, elixir-autogen, elixir-format
+msgid "Versions"
+msgstr ""
+
+#: lib/firmos_web/live/dashboard_live.ex:86
+#, elixir-autogen, elixir-format
+msgid "We couldn't generate your business plan. Open it to try again."
+msgstr ""
+
+#: lib/firmos_web/live/company_live/plan.ex:181
+#, elixir-autogen, elixir-format
+msgid "We couldn't generate your plan"
+msgstr ""
+
+#: lib/firmos_web/live/dashboard_live.ex:81
+#, elixir-autogen, elixir-format
+msgid "Your business plan is ready."
+msgstr ""
+
+#: lib/firmos_web/live/company_live/plan.ex:373
+#, elixir-autogen, elixir-format
+msgid "failed"
+msgstr ""
+
+#: lib/firmos_web/live/company_live/plan.ex:371
+#, elixir-autogen, elixir-format
+msgid "generating"
+msgstr ""
+
+#: lib/firmos_web/live/company_live/plan.ex:370
+#, elixir-autogen, elixir-format
+msgid "queued"
+msgstr ""
+
+#: lib/firmos_web/live/company_live/plan.ex:372
+#, elixir-autogen, elixir-format
+msgid "ready"
+msgstr ""
+
+#: lib/firmos_web/live/company_live/plan.ex:284
+#, elixir-autogen, elixir-format
+msgid "v%{version}"
+msgstr ""
+
+#: lib/firmos_web/live/company_live/plan.ex:135
+#, elixir-autogen, elixir-format
+msgid "version %{version}"
 msgstr ""

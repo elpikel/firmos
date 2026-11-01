@@ -12,8 +12,8 @@ defmodule Firmos.Application do
       Firmos.Repo,
       {DNSCluster, query: Application.get_env(:firmos, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: Firmos.PubSub},
-      # Start a worker by calling: Firmos.Worker.start_link(arg)
-      # {Firmos.Worker, arg},
+      # After PubSub: jobs broadcast their results.
+      {Oban, Application.fetch_env!(:firmos, Oban)},
       # Start to serve requests, typically the last entry
       FirmosWeb.Endpoint
     ]

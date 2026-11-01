@@ -18,10 +18,10 @@ defmodule Firmos.Activity.Entry do
   alias Firmos.Companies.Company
 
   @actors [:owner, :agent, :system]
-  @actions [:company_created, :company_updated]
+  @actions [:company_created, :company_updated, :plan_generated, :plan_regenerated]
 
   @type actor :: :owner | :agent | :system
-  @type action :: :company_created | :company_updated
+  @type action :: :company_created | :company_updated | :plan_generated | :plan_regenerated
 
   @type t :: %__MODULE__{
           id: integer() | nil,

@@ -41,6 +41,20 @@ config :firmos, Firmos.AI.Claude,
   retry: true,
   max_retries: 2
 
+# Background jobs (Postgres engine). `ai` runs plan generation; Lifeline
+# resumes jobs orphaned by a crashed node, Pruner trims finished ones (#17).
+#
+# Lifeline treats any job `executing` longer than `rescue_after` as orphaned,
+# so it must outlast a live AI call: worst case is receive_timeout 600s ×
+# (max_retries 2 + 1) = 30 min plus Req's backoff (seconds). 45 min leaves a
+# margin; `Firmos.Plans` calls a plan stalled only after 120 min, past this
+# window plus a resumed attempt.
+config :firmos, Oban,
+  engine: Oban.Engines.Basic,
+  repo: Firmos.Repo,
+  queues: [ai: 5],
+  plugins: [Oban.Plugins.Pruner, {Oban.Plugins.Lifeline, rescue_after: :timer.minutes(45)}]
+
 # Configure the endpoint
 config :firmos, FirmosWeb.Endpoint,
   url: [host: "localhost"],

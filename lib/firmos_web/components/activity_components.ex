@@ -79,6 +79,15 @@ defmodule FirmosWeb.ActivityComponents do
     """
   end
 
+  defp summary(%{entry: %Entry{action: action, metadata: %{"version" => version}}} = assigns)
+       when action in [:plan_generated, :plan_regenerated] and is_integer(version) do
+    assigns = assign(assigns, :text, plan_summary(action, version))
+
+    ~H"""
+    <p>{@text}</p>
+    """
+  end
+
   defp summary(%{entry: %Entry{action: action}} = assigns) do
     assigns = assign(assigns, :text, fallback_summary(action))
 
@@ -89,9 +98,17 @@ defmodule FirmosWeb.ActivityComponents do
 
   defp fallback_summary(:company_created), do: gettext("Created the company.")
   defp fallback_summary(:company_updated), do: gettext("Updated the company profile.")
+  defp fallback_summary(:plan_generated), do: gettext("Generated the business plan.")
+  defp fallback_summary(:plan_regenerated), do: gettext("Requested a new business plan.")
   # An action without a renderer yet must not break the whole log page; the
   # test over `Entry.actions/0` catches the missing clause.
   defp fallback_summary(_action), do: ""
+
+  defp plan_summary(:plan_generated, version),
+    do: gettext("Generated version %{version} of the business plan.", version: version)
+
+  defp plan_summary(:plan_regenerated, version),
+    do: gettext("Requested version %{version} of the business plan.", version: version)
 
   @doc """
   The translated label for an action; an action without a label yet shows
@@ -100,6 +117,8 @@ defmodule FirmosWeb.ActivityComponents do
   @spec action_label(Entry.action()) :: String.t()
   def action_label(:company_created), do: gettext("Company created")
   def action_label(:company_updated), do: gettext("Profile updated")
+  def action_label(:plan_generated), do: gettext("Plan generated")
+  def action_label(:plan_regenerated), do: gettext("New plan requested")
   def action_label(action) when is_atom(action), do: Atom.to_string(action)
 
   @doc "The translated label for an actor."

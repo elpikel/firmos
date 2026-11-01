@@ -29,6 +29,10 @@ defmodule FirmosWeb.Features.AiBusinessPlanTest do
   # Runs every enqueued plan job in this process, like the `ai` queue would.
   defp run_plan_jobs, do: Oban.drain_queue(queue: :ai, with_safety: false)
 
+  # A LiveView also gets the plan broadcasts it triggers or watches; wait until
+  # it has handled them, so it never queries after this test's sandbox is gone.
+  defp settle(view), do: render(view)
+
   defp generated_company(scope) do
     company = company_fixture(scope)
     expect_ai_reply({:ok, plan_json()})
@@ -41,7 +45,6 @@ defmodule FirmosWeb.Features.AiBusinessPlanTest do
   # ---------------------------------------------------------------------
 
   describe "Scenario: AC1 — the owner reaches the dashboard with a new company" do
-    @describetag :skip
     setup :register_and_log_in_user
 
     setup %{conn: conn, scope: scope} do
@@ -66,7 +69,6 @@ defmodule FirmosWeb.Features.AiBusinessPlanTest do
   end
 
   describe "Scenario: AC1 — generation finishes while the dashboard is open" do
-    @describetag :skip
     setup :register_and_log_in_user
 
     setup %{conn: conn, scope: scope} do
@@ -84,7 +86,6 @@ defmodule FirmosWeb.Features.AiBusinessPlanTest do
   end
 
   describe "Scenario: AC2 — the owner opens the generated plan" do
-    @describetag :skip
     setup :register_and_log_in_user
 
     setup %{conn: conn, scope: scope} do
@@ -119,7 +120,6 @@ defmodule FirmosWeb.Features.AiBusinessPlanTest do
   end
 
   describe "Scenario: AC2 — the owner opens the plan from the dashboard" do
-    @describetag :skip
     setup :register_and_log_in_user
 
     setup %{conn: conn, scope: scope} do
@@ -136,7 +136,6 @@ defmodule FirmosWeb.Features.AiBusinessPlanTest do
   end
 
   describe "Scenario: AC3 — the owner opens the activity log after generation" do
-    @describetag :skip
     setup :register_and_log_in_user
 
     setup %{conn: conn, scope: scope} do
@@ -160,13 +159,13 @@ defmodule FirmosWeb.Features.AiBusinessPlanTest do
   end
 
   describe "Scenario: AC4 — the owner gives the plan a thumbs up" do
-    @describetag :skip
     setup :register_and_log_in_user
 
     setup %{conn: conn, scope: scope} do
       company = generated_company(scope)
       {:ok, view, _html} = live(conn, ~p"/companies/#{company.id}/plan")
       view |> element("#plan-rate-up") |> render_click()
+      settle(view)
 
       %{plan: Plans.current_plan(scope, company)}
     end
@@ -177,13 +176,13 @@ defmodule FirmosWeb.Features.AiBusinessPlanTest do
   end
 
   describe "Scenario: AC4 — the owner gives the plan a thumbs down" do
-    @describetag :skip
     setup :register_and_log_in_user
 
     setup %{conn: conn, scope: scope} do
       company = generated_company(scope)
       {:ok, view, _html} = live(conn, ~p"/companies/#{company.id}/plan")
       view |> element("#plan-rate-down") |> render_click()
+      settle(view)
 
       %{plan: Plans.current_plan(scope, company)}
     end
@@ -198,7 +197,6 @@ defmodule FirmosWeb.Features.AiBusinessPlanTest do
   # ---------------------------------------------------------------------
 
   describe "Scenario: AC5 — rejecting a plan when the AI provider returns an error" do
-    @describetag :skip
     setup :register_and_log_in_user
 
     setup %{conn: conn, scope: scope} do
@@ -206,6 +204,7 @@ defmodule FirmosWeb.Features.AiBusinessPlanTest do
       {:ok, view, _html} = live(conn, ~p"/companies/#{company.id}/plan")
       expect_ai_reply({:error, {:http_status, 500, "overloaded_error: Overloaded"}})
       counts = run_plan_jobs()
+      settle(view)
 
       %{view: view, counts: counts}
     end
@@ -224,7 +223,6 @@ defmodule FirmosWeb.Features.AiBusinessPlanTest do
   end
 
   describe "Scenario: AC5 — rejecting a plan the AI returned as invalid JSON" do
-    @describetag :skip
     setup :register_and_log_in_user
 
     setup %{conn: conn, scope: scope} do
@@ -242,7 +240,6 @@ defmodule FirmosWeb.Features.AiBusinessPlanTest do
   end
 
   describe "Scenario: AC5 — the owner tries again after a failure" do
-    @describetag :skip
     setup :register_and_log_in_user
 
     setup %{conn: conn, scope: scope} do
@@ -251,6 +248,7 @@ defmodule FirmosWeb.Features.AiBusinessPlanTest do
       run_plan_jobs()
       {:ok, view, _html} = live(conn, ~p"/companies/#{company.id}/plan")
       view |> element("#plan-retry") |> render_click()
+      settle(view)
 
       %{view: view, plan: Plans.current_plan(scope, company)}
     end
@@ -269,13 +267,13 @@ defmodule FirmosWeb.Features.AiBusinessPlanTest do
   end
 
   describe "Scenario: AC6 — the owner regenerates an existing plan" do
-    @describetag :skip
     setup :register_and_log_in_user
 
     setup %{conn: conn, scope: scope} do
       company = generated_company(scope)
       {:ok, view, _html} = live(conn, ~p"/companies/#{company.id}/plan")
       view |> element("#plan-regenerate") |> render_click()
+      settle(view)
       [newest, previous] = Plans.list_plans(scope, company)
       {:ok, previous_view, _html} = live(conn, ~p"/companies/#{company.id}/plan?version=1")
 
@@ -304,7 +302,6 @@ defmodule FirmosWeb.Features.AiBusinessPlanTest do
   end
 
   describe "Scenario: rejecting another owner's plan" do
-    @describetag :skip
     setup :register_and_log_in_user
 
     setup do
