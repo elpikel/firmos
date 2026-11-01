@@ -15,9 +15,13 @@ defmodule FirmosWeb.ActivityComponents do
 
   @site_actions [:site_generated, :site_updated, :site_published, :site_undone]
 
-  @doc "One activity entry: actor, action, time and summary."
+  @doc """
+  One activity entry: actor, action, time and summary, with the optional
+  `actions` (e.g. an undo button the page decides to offer) under it.
+  """
   attr :id, :string, required: true
   attr :entry, Entry, required: true
+  slot :actions
 
   def activity_entry(assigns) do
     ~H"""
@@ -43,13 +47,17 @@ defmodule FirmosWeb.ActivityComponents do
           </time>
         </div>
         <div data-role="summary" class="text-sm text-zinc-600">
-          <.summary entry={@entry} />
+          <.summary id={@id} entry={@entry} />
+        </div>
+        <div :if={@actions != []} class="flex flex-wrap items-center gap-2 pt-1">
+          {render_slot(@actions)}
         </div>
       </div>
     </article>
     """
   end
 
+  attr :id, :string, required: true
   attr :entry, Entry, required: true
 
   defp summary(%{entry: %Entry{action: :company_created, metadata: %{"name" => name}}} = assigns)
@@ -87,6 +95,46 @@ defmodule FirmosWeb.ActivityComponents do
 
     ~H"""
     <p>{@text}</p>
+    """
+  end
+
+  # An undo names the change it reverted and links to its entry in the log.
+  defp summary(
+         %{
+           entry: %Entry{
+             action: :site_undone,
+             metadata: %{
+               "version" => version,
+               "restored_from_version" => restored,
+               "reverts_entry_id" => reverted_id,
+               "reverts_entry_at" => reverted_at
+             }
+           }
+         } = assigns
+       )
+       when is_integer(version) and is_integer(restored) and is_integer(reverted_id) do
+    assigns =
+      assign(assigns,
+        reverted_id: reverted_id,
+        text:
+          gettext(
+            "Undid the change from %{time}: the content of version %{restored} is back as version %{version}.",
+            time: format_iso_timestamp(reverted_at),
+            restored: restored,
+            version: version
+          )
+      )
+
+    ~H"""
+    <p>{@text}</p>
+    <.link
+      id={"#{@id}-reverts"}
+      href={"#activities-#{@reverted_id}"}
+      class="mt-1 inline-flex items-center gap-1 text-xs font-medium text-zinc-500 underline-offset-4 transition hover:text-zinc-900 hover:underline"
+    >
+      <.icon name="hero-arrow-uturn-left" class="size-3" />
+      {gettext("Show the undone change")}
+    </.link>
     """
   end
 
@@ -173,6 +221,15 @@ defmodule FirmosWeb.ActivityComponents do
   defp format_value(""), do: gettext("(empty)")
   defp format_value(value) when is_binary(value), do: value
   defp format_value(value), do: Jason.encode!(value)
+
+  defp format_iso_timestamp(iso) when is_binary(iso) do
+    case DateTime.from_iso8601(iso) do
+      {:ok, at, _offset} -> format_timestamp(at)
+      {:error, _invalid} -> iso
+    end
+  end
+
+  defp format_iso_timestamp(_missing), do: gettext("(unknown)")
 
   # No tz database in deps, so times show in UTC with a label (#14).
   defp format_timestamp(%DateTime{} = at) do

@@ -75,15 +75,18 @@ defmodule Firmos.Activity do
 
   @typedoc """
   A position in a company's log: the `{inserted_at, id}` of the last entry
-  read. Pass it as `:before` to read the next (older) page.
+  read. Pass it as `:before` to read the next (older) page, or as `:after`
+  to read what was logged since.
   """
   @type cursor :: {DateTime.t(), integer()}
 
   @typedoc """
   * `:limit` - at most this many entries (default #{@default_limit}).
   * `:before` - only entries older than this `t:cursor/0`.
+  * `:after` - only entries newer than this `t:cursor/0`.
   """
-  @type list_opt :: {:limit, pos_integer()} | {:before, cursor()}
+  @type list_opt ::
+          {:limit, pos_integer()} | {:before, cursor()} | {:after, cursor()}
 
   @doc """
   Returns a page of the company's activity entries, newest first, using a
@@ -95,19 +98,75 @@ defmodule Firmos.Activity do
   """
   @spec list_for_company(%Scope{}, Company.t(), [list_opt()]) :: [Entry.t()]
   def list_for_company(
-        %Scope{user: %{id: user_id}},
-        %Company{id: company_id, user_id: user_id},
+        %Scope{user: %{id: user_id}} = scope,
+        %Company{user_id: user_id} = company,
         opts \\ []
       ) do
-    from(e in Entry, as: :entry)
-    |> join(:inner, [entry: e], c in assoc(e, :company), as: :company)
-    |> where([entry: e], e.company_id == ^company_id)
-    |> where([company: c], c.user_id == ^user_id)
+    scope
+    |> owned_entries(company)
     |> before(Keyword.get(opts, :before))
+    |> since(Keyword.get(opts, :after))
     |> order_by([entry: e], desc: e.inserted_at, desc: e.id)
     |> limit(^Keyword.get(opts, :limit, @default_limit))
     |> Repo.all()
   end
+
+  @doc """
+  The company's newest entry (in log order) whose action is one of
+  `actions`, or `nil`; with `before: cursor`, the newest one older than that
+  `t:cursor/0`. Raises `FunctionClauseError` for a company the scope doesn't
+  own; the query is also filtered by the owner.
+  """
+  @spec latest_for_company(%Scope{}, Company.t(), [Entry.action(), ...], before: cursor()) ::
+          Entry.t() | nil
+  def latest_for_company(
+        %Scope{user: %{id: user_id}} = scope,
+        %Company{user_id: user_id} = company,
+        [_ | _] = actions,
+        opts \\ []
+      ) do
+    scope
+    |> owned_entries(company)
+    |> where([entry: e], e.action in ^actions)
+    |> before(Keyword.get(opts, :before))
+    |> order_by([entry: e], desc: e.inserted_at, desc: e.id)
+    |> limit(1)
+    |> Repo.one()
+  end
+
+  @doc """
+  The company's entry `id`, or `{:error, :not_found}` when it belongs to
+  another company (or doesn't exist). Raises `FunctionClauseError` for a
+  company the scope doesn't own.
+  """
+  @spec fetch_entry(%Scope{}, Company.t(), integer()) ::
+          {:ok, Entry.t()} | {:error, :not_found}
+  def fetch_entry(%Scope{user: %{id: user_id}} = scope, %Company{user_id: user_id} = company, id)
+      when is_integer(id) do
+    scope
+    |> owned_entries(company)
+    |> where([entry: e], e.id == ^id)
+    |> Repo.one()
+    |> case do
+      nil -> {:error, :not_found}
+      entry -> {:ok, entry}
+    end
+  end
+
+  defp owned_entries(%Scope{user: %{id: user_id}}, %Company{id: company_id}) do
+    from(e in Entry, as: :entry)
+    |> join(:inner, [entry: e], c in assoc(e, :company), as: :company)
+    |> where([entry: e], e.company_id == ^company_id)
+    |> where([company: c], c.user_id == ^user_id)
+  end
+
+  @doc """
+  The id of `entry`'s subject when it is of `type` (e.g. `"site_version"`),
+  else `nil`.
+  """
+  @spec subject_id(Entry.t(), String.t()) :: integer() | nil
+  def subject_id(%Entry{subject_type: type, subject_id: id}, type) when is_integer(id), do: id
+  def subject_id(%Entry{}, _type), do: nil
 
   @doc "The cursor pointing just after `entry`, for `list_for_company/3`."
   @spec cursor(Entry.t()) :: cursor()
@@ -123,6 +182,22 @@ defmodule Firmos.Activity do
       [entry: e],
       fragment(
         "(?, ?) < (?, ?)",
+        e.inserted_at,
+        e.id,
+        type(^inserted_at, :utc_datetime),
+        type(^id, :id)
+      )
+    )
+  end
+
+  defp since(query, nil), do: query
+
+  defp since(query, {%DateTime{} = inserted_at, id}) when is_integer(id) do
+    where(
+      query,
+      [entry: e],
+      fragment(
+        "(?, ?) > (?, ?)",
         e.inserted_at,
         e.id,
         type(^inserted_at, :utc_datetime),

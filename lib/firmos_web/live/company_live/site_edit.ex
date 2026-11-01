@@ -9,6 +9,12 @@ defmodule FirmosWeb.CompanyLive.SiteEdit do
   the website section. Saving goes through `Firmos.Sites.update_content/3`,
   which re-checks ownership, refuses during a generation and stores a new
   version only when something changed.
+
+  The edit is based on the version loaded at mount (`@site`, never a client
+  param): `update_content/3` refuses it as `:stale` when the site moved
+  since. The page follows the company's site changes and, as soon as the
+  current version moves (another tab, an undo, a new generation), shows
+  `#site-edit-stale` with a reload link and disables saving.
   """
   use FirmosWeb, :live_view
 
@@ -23,12 +29,15 @@ defmodule FirmosWeb.CompanyLive.SiteEdit do
 
     case Sites.get_site(scope, company) do
       %{current_version: %Version{}} = site ->
+        if connected?(socket), do: :ok = Sites.subscribe(scope, company)
+
         {:ok,
          socket
          |> assign(:page_title, gettext("Edit website"))
          |> assign(:company, company)
          |> assign(:site, site)
          |> assign(:in_progress?, Sites.generation_in_progress?(site))
+         |> assign(:stale?, false)
          |> assign(:form, site |> Sites.change_content() |> to_form())}
 
       _no_draft ->
@@ -63,6 +72,12 @@ defmodule FirmosWeb.CompanyLive.SiteEdit do
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, :form, to_form(changeset))}
 
+      {:error, :stale} ->
+        {:noreply,
+         socket
+         |> assign(:stale?, true)
+         |> put_flash(:error, stale_message())}
+
       {:error, :generation_in_progress} ->
         {:noreply,
          put_flash(
@@ -78,6 +93,25 @@ defmodule FirmosWeb.CompanyLive.SiteEdit do
 
   # Forged or stale events change nothing.
   def handle_event(_event, _params, socket), do: {:noreply, socket}
+
+  @impl true
+  def handle_info({:site_updated, _site}, socket) do
+    %{current_scope: scope, company: company, site: site} = socket.assigns
+
+    case Sites.get_site(scope, company) do
+      %{current_version_id: current_id} = fresh ->
+        {:noreply,
+         socket
+         |> assign(:in_progress?, Sites.generation_in_progress?(fresh))
+         |> assign(:stale?, socket.assigns.stale? or current_id != site.current_version_id)}
+
+      nil ->
+        {:noreply, assign(socket, :stale?, true)}
+    end
+  end
+
+  defp stale_message,
+    do: gettext("The website changed in the meantime. Reload to edit the latest version.")
 
   @impl true
   def render(assigns) do
@@ -113,6 +147,23 @@ defmodule FirmosWeb.CompanyLive.SiteEdit do
         >
           <.icon name="hero-sparkles" class="mt-0.5 size-5 shrink-0" />
           <p>{gettext("A new website is being generated. You can save once it's ready.")}</p>
+        </div>
+
+        <div
+          :if={@stale?}
+          id="site-edit-stale"
+          role="alert"
+          class="flex flex-wrap items-start gap-3 rounded-2xl border border-rose-200 bg-rose-50 px-5 py-4 text-sm text-rose-900"
+        >
+          <.icon name="hero-exclamation-triangle" class="mt-0.5 size-5 shrink-0" />
+          <p class="flex-1">{stale_message()}</p>
+          <.link
+            id="site-edit-reload"
+            navigate={~p"/companies/#{@company.id}/site/edit"}
+            class="font-semibold underline underline-offset-4 transition hover:text-rose-700"
+          >
+            {gettext("Reload")}
+          </.link>
         </div>
 
         <.form
@@ -187,7 +238,7 @@ defmodule FirmosWeb.CompanyLive.SiteEdit do
             <button
               id="site-edit-save"
               type="submit"
-              disabled={@in_progress?}
+              disabled={@in_progress? or @stale?}
               phx-disable-with={gettext("Saving...")}
               class="inline-flex items-center gap-1.5 rounded-lg bg-zinc-900 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-zinc-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-zinc-300"
             >

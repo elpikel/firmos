@@ -442,6 +442,17 @@ defmodule Firmos.SitesTest do
       assert {:error, :generation_in_progress} =
                Sites.update_content(scope, site, %{"hero" => %{"headline" => "Nowy"}})
     end
+
+    test "refuses an edit based on a version the site moved away from",
+         %{scope: scope, company: company, site: site} do
+      {:ok, _other_tab} =
+        Sites.update_content(scope, site, %{"hero" => %{"headline" => "Z karty"}})
+
+      assert {:error, :stale} =
+               Sites.update_content(scope, site, %{"hero" => %{"headline" => "Stary edytor"}})
+
+      assert Sites.get_site(scope, company).current_version.content.hero.headline == "Z karty"
+    end
   end
 
   describe "set_slug/3" do
@@ -523,6 +534,202 @@ defmodule Firmos.SitesTest do
       {:ok, _edited} = Sites.update_content(scope, site, %{"hero" => %{"headline" => "Nowy"}})
 
       assert {:ok, %{published_version: %{number: 1}}} = Sites.get_published_by_slug("piekarnia")
+    end
+  end
+
+  describe "undo/3" do
+    setup %{scope: scope, company: company} do
+      site = generated_site(scope, company)
+      {:ok, edited} = Sites.update_content(scope, site, %{"hero" => %{"headline" => "Nowy"}})
+      %{site: edited, entry: latest(scope, company, :site_updated)}
+    end
+
+    defp latest(scope, company, action) do
+      scope |> Activity.list_for_company(company) |> Enum.find(&(&1.action == action))
+    end
+
+    test "restores the previous content as a new undo version",
+         %{scope: scope, company: company, entry: entry} do
+      assert {:ok, %{current_version: %{number: 3, source: :undo, content: content}}} =
+               Sites.undo(scope, company, entry.id)
+
+      assert content.hero.headline == site_attrs()["hero"]["headline"]
+    end
+
+    test "records the undo with the reverted entry",
+         %{scope: scope, company: company, entry: entry} do
+      {:ok, site} = Sites.undo(scope, company, entry.id)
+      undo = latest(scope, company, :site_undone)
+
+      assert %{
+               actor: :owner,
+               subject_type: "site_version",
+               metadata: %{
+                 "version" => 3,
+                 "restored_from_version" => 1,
+                 "reverts_entry_id" => reverted_id
+               }
+             } = undo
+
+      assert {reverted_id, undo.subject_id} == {entry.id, site.current_version_id}
+    end
+
+    test "offers the latest change, then nothing after the undo",
+         %{scope: scope, company: company, entry: entry} do
+      assert %{id: id} = Sites.undoable_entry(scope, company)
+      assert id == entry.id
+      {:ok, _site} = Sites.undo(scope, company, entry.id)
+      assert Sites.undoable_entry(scope, company) == nil
+    end
+
+    test "a second click is not undoable", %{scope: scope, company: company, entry: entry} do
+      {:ok, _site} = Sites.undo(scope, company, entry.id)
+
+      assert {:error, :not_undoable} = Sites.undo(scope, company, entry.id)
+    end
+
+    test "refuses an older change", %{scope: scope, company: company} do
+      generated = latest(scope, company, :site_generated)
+
+      assert {:error, :not_undoable} = Sites.undo(scope, company, generated.id)
+    end
+
+    test "refuses an entry that isn't a site change", %{scope: scope, company: company} do
+      created = latest(scope, company, :company_created)
+
+      assert {:error, :not_undoable} = Sites.undo(scope, company, created.id)
+    end
+
+    test "refuses while a generation is in progress",
+         %{scope: scope, company: company, entry: entry} do
+      {:ok, _pending} = Sites.request_generation(scope, company)
+
+      assert {:error, :generation_in_progress} = Sites.undo(scope, company, entry.id)
+      assert Sites.undoable_entry(scope, company) == nil
+    end
+
+    test "a single version offers nothing to undo" do
+      scope = user_scope_fixture()
+      company = company_fixture(scope)
+      expect_ai_reply({:ok, plan_json()})
+      {:ok, _plan} = Plans.generate_plan(Plans.current_plan(scope, company).id)
+      generated_site(scope, company)
+      generated = latest(scope, company, :site_generated)
+
+      assert Sites.undoable_entry(scope, company) == nil
+      assert {:error, :not_undoable} = Sites.undo(scope, company, generated.id)
+    end
+
+    test "refuses another owner's entry", %{company: company, entry: entry} do
+      other_scope = user_scope_fixture()
+      other_company = company_fixture(other_scope)
+      expect_ai_reply({:ok, plan_json()})
+      {:ok, _plan} = Plans.generate_plan(Plans.current_plan(other_scope, other_company).id)
+      other_site = generated_site(other_scope, other_company)
+
+      {:ok, _edited} =
+        Sites.update_content(other_scope, other_site, %{"hero" => %{"headline" => "Inny"}})
+
+      assert {:error, :not_found} = Sites.undo(other_scope, other_company, entry.id)
+      assert {:error, :not_found} = Sites.undo(other_scope, company, entry.id)
+      assert Sites.undoable_entry(other_scope, company) == nil
+    end
+
+    test "refuses the owner's entry from another of their companies",
+         %{scope: scope, company: company, entry: entry} do
+      other_company = company_fixture(scope, "Kawiarnia z wypiekami w Gdańsku, otwarta od rana.")
+      expect_ai_reply({:ok, plan_json()})
+      {:ok, _plan} = Plans.generate_plan(Plans.current_plan(scope, other_company).id)
+      generated_site(scope, other_company)
+
+      assert {:error, :not_found} = Sites.undo(scope, other_company, entry.id)
+      assert Sites.get_site(scope, company).current_version.number == 2
+    end
+
+    test "undoing a draft-only edit keeps the published version",
+         %{scope: scope, company: company, site: site} do
+      {:ok, site} = Sites.set_slug(scope, site, "piekarnia")
+      {:ok, published} = Sites.publish(scope, site)
+
+      {:ok, _draft} =
+        Sites.update_content(scope, published, %{"hero" => %{"headline" => "Szkic"}})
+
+      draft_entry = latest(scope, company, :site_updated)
+
+      {:ok, undone} = Sites.undo(scope, company, draft_entry.id)
+
+      assert undone.published_version_id == published.published_version_id
+      assert undone.current_version.content.hero.headline == "Nowy"
+    end
+
+    test "undoing a publish puts back the previously published content",
+         %{scope: scope, company: company, site: site} do
+      {:ok, site} = Sites.set_slug(scope, site, "piekarnia")
+      {:ok, site} = Sites.publish(scope, site)
+      {:ok, site} = Sites.update_content(scope, site, %{"hero" => %{"headline" => "Trzeci"}})
+      {:ok, _published} = Sites.publish(scope, site)
+      published_entry = latest(scope, company, :site_published)
+
+      {:ok, undone} = Sites.undo(scope, company, published_entry.id)
+      {:ok, public} = Sites.get_published_by_slug("piekarnia")
+
+      assert undone.published_version_id == undone.current_version_id
+      assert public.published_version.content.hero.headline == "Nowy"
+    end
+
+    test "the first publication can't be undone", %{scope: scope, company: company, site: site} do
+      {:ok, site} = Sites.set_slug(scope, site, "piekarnia")
+      {:ok, _published} = Sites.publish(scope, site)
+      published_entry = latest(scope, company, :site_published)
+
+      assert published_entry.metadata["previous_published_version_id"] == nil
+      assert Sites.undoable_entry(scope, company) == nil
+      assert {:error, :not_undoable} = Sites.undo(scope, company, published_entry.id)
+    end
+
+    test "falls back to the previous publication for entries without the metadata",
+         %{scope: scope, company: company, site: site} do
+      {:ok, site} = Sites.set_slug(scope, site, "piekarnia")
+      {:ok, site} = Sites.publish(scope, site)
+      {:ok, site} = Sites.update_content(scope, site, %{"hero" => %{"headline" => "Trzeci"}})
+      {:ok, _published} = Sites.publish(scope, site)
+      entry = latest(scope, company, :site_published)
+
+      Repo.update_all(from(e in Firmos.Activity.Entry, where: e.id == ^entry.id),
+        set: [metadata: %{"slug" => "piekarnia", "version" => 3}]
+      )
+
+      {:ok, undone} = Sites.undo(scope, company, entry.id)
+
+      assert undone.current_version.content.hero.headline == "Nowy"
+    end
+
+    test "the exact repro: edit, undo, publish, undo never makes the bad edit live" do
+      scope = user_scope_fixture()
+      company = company_fixture(scope)
+      expect_ai_reply({:ok, plan_json()})
+      {:ok, _plan} = Plans.generate_plan(Plans.current_plan(scope, company).id)
+      {:ok, site} = Sites.set_slug(scope, generated_site(scope, company), "probe")
+      {:ok, _v1_live} = Sites.publish(scope, site)
+
+      {:ok, _v2} =
+        Sites.update_content(scope, Sites.get_site(scope, company), %{
+          "hero" => %{"headline" => "BAD EDIT"}
+        })
+
+      {:ok, _v3} = Sites.undo(scope, company, Sites.undoable_entry(scope, company).id)
+      {:ok, _v3_live} = Sites.publish(scope, Sites.get_site(scope, company))
+      {:ok, _v4} = Sites.undo(scope, company, Sites.undoable_entry(scope, company).id)
+      {:ok, public} = Sites.get_published_by_slug("probe")
+
+      assert public.published_version.content.hero.headline == site_attrs()["hero"]["headline"]
+    end
+
+    test "broadcasts the restored site", %{scope: scope, company: company, entry: entry} do
+      :ok = Sites.subscribe(scope, company)
+      {:ok, site} = Sites.undo(scope, company, entry.id)
+
+      assert_receive {:site_updated, %{current_version_id: id}} when id == site.current_version_id
     end
   end
 

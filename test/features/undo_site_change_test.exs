@@ -73,7 +73,6 @@ defmodule FirmosWeb.Features.UndoSiteChangeTest do
   # ---------------------------------------------------------------------
 
   describe "Scenario: AC1 — undo is offered on the latest change" do
-    @describetag :skip
     setup :register_and_log_in_user
 
     setup %{conn: conn, scope: scope} do
@@ -97,7 +96,6 @@ defmodule FirmosWeb.Features.UndoSiteChangeTest do
   end
 
   describe "Scenario: AC1 — the owner undoes the latest change of a published site" do
-    @describetag :skip
     setup :register_and_log_in_user
 
     setup %{conn: conn, scope: scope} do
@@ -126,7 +124,6 @@ defmodule FirmosWeb.Features.UndoSiteChangeTest do
   end
 
   describe "Scenario: AC2 — the owner opens the activity log after undoing" do
-    @describetag :skip
     setup :register_and_log_in_user
 
     setup %{conn: conn, scope: scope} do
@@ -165,7 +162,6 @@ defmodule FirmosWeb.Features.UndoSiteChangeTest do
   # ---------------------------------------------------------------------
 
   describe "Scenario: AC3 — rejecting undo on a site with a single version" do
-    @describetag :skip
     setup :register_and_log_in_user
 
     setup %{conn: conn, scope: scope} do
