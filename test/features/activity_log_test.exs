@@ -28,7 +28,6 @@ defmodule FirmosWeb.Features.ActivityLogTest do
   # ---------------------------------------------------------------------
 
   describe "Scenario: AC1 — the owner saves a changed company profile" do
-    @describetag :skip
     setup :register_and_log_in_user
 
     setup %{conn: conn, scope: scope} do
@@ -69,7 +68,6 @@ defmodule FirmosWeb.Features.ActivityLogTest do
   end
 
   describe "Scenario: AC1 — the owner's idea becomes their company" do
-    @describetag :skip
     setup :register_and_log_in_user
 
     setup %{scope: scope} do
@@ -83,7 +81,6 @@ defmodule FirmosWeb.Features.ActivityLogTest do
   end
 
   describe "Scenario: AC1 — an agent changes company content" do
-    @describetag :skip
     setup :register_and_log_in_user
 
     setup %{scope: scope} do
@@ -108,7 +105,6 @@ defmodule FirmosWeb.Features.ActivityLogTest do
   end
 
   describe "Scenario: AC2 — the owner opens the activity log" do
-    @describetag :skip
     setup :register_and_log_in_user
 
     setup %{conn: conn, scope: scope} do
@@ -152,7 +148,6 @@ defmodule FirmosWeb.Features.ActivityLogTest do
   end
 
   describe "Scenario: AC2 — the owner opens the log from the dashboard" do
-    @describetag :skip
     setup :register_and_log_in_user
 
     setup %{conn: conn, scope: scope} do
@@ -169,7 +164,6 @@ defmodule FirmosWeb.Features.ActivityLogTest do
   end
 
   describe "Scenario: AC2 — the owner opens the log from the company profile" do
-    @describetag :skip
     setup :register_and_log_in_user
 
     setup %{conn: conn, scope: scope} do
@@ -190,7 +184,6 @@ defmodule FirmosWeb.Features.ActivityLogTest do
   # ---------------------------------------------------------------------
 
   describe "Scenario: AC3 — rejecting another owner's activity log" do
-    @describetag :skip
     setup :register_and_log_in_user
 
     setup do

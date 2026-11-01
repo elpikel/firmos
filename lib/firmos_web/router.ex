@@ -48,6 +48,7 @@ defmodule FirmosWeb.Router do
       on_mount: [{FirmosWeb.UserAuth, :require_authenticated}] do
       live "/dashboard", DashboardLive, :index
       live "/companies/:id/profile", CompanyLive.Profile, :edit
+      live "/companies/:id/activity", CompanyLive.Activity, :index
       live "/users/settings", UserLive.Settings, :edit
       live "/users/settings/confirm-email/:token", UserLive.Settings, :confirm_email
     end

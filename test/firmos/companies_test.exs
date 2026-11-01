@@ -4,6 +4,7 @@ defmodule Firmos.CompaniesTest do
   import Firmos.AccountsFixtures
   import Firmos.CompaniesFixtures
 
+  alias Firmos.Activity
   alias Firmos.Companies
   alias Firmos.Ideas
 
@@ -164,6 +165,56 @@ defmodule Firmos.CompaniesTest do
       assert_raise FunctionClauseError, fn ->
         Companies.update_company(user_scope_fixture(), company, %{name: "Przejęta"})
       end
+    end
+  end
+
+  describe "activity recorded by company changes" do
+    setup %{scope: scope} do
+      %{company: company_fixture(scope)}
+    end
+
+    test "creating a company records company_created with its name", %{
+      scope: scope,
+      company: company
+    } do
+      assert [entry] = Activity.list_for_company(scope, company)
+
+      assert {entry.action, entry.actor, entry.actor_user_id} ==
+               {:company_created, :owner, scope.user.id}
+
+      assert entry.metadata == %{"name" => @default_name}
+    end
+
+    test "an update records every changed field, old to new", %{scope: scope, company: company} do
+      {:ok, _} =
+        Companies.update_company(scope, company, %{
+          name: "Piekarnia",
+          city: "Kraków",
+          industry: ""
+        })
+
+      assert [%{action: :company_updated, metadata: metadata} | _] =
+               Activity.list_for_company(scope, company)
+
+      assert metadata == %{
+               "changes" => %{
+                 "name" => %{"from" => @default_name, "to" => "Piekarnia"},
+                 "city" => %{"from" => nil, "to" => "Kraków"}
+               }
+             }
+    end
+
+    test "an update that changes nothing records nothing", %{scope: scope, company: company} do
+      {:ok, _} =
+        Companies.update_company(scope, company, %{name: "  #{@default_name} ", city: ""})
+
+      assert [%{action: :company_created}] = Activity.list_for_company(scope, company)
+    end
+
+    test "a rejected update records nothing", %{scope: scope, company: company} do
+      {:error, _} = Companies.update_company(scope, company, %{name: ""})
+
+      assert [%{action: :company_created}] = Activity.list_for_company(scope, company)
     end
   end
 end
