@@ -18,8 +18,6 @@ defmodule FirmosWeb.Features.PolishUiTest do
   # ---------------------------------------------------------------------
 
   describe "Scenario: AC1 — a visitor opens the home page" do
-    @describetag :skip
-
     setup %{conn: conn} do
       document =
         conn
@@ -48,8 +46,6 @@ defmodule FirmosWeb.Features.PolishUiTest do
   # ---------------------------------------------------------------------
 
   describe "Scenario: AC2 — rendering a message with no Polish translation" do
-    @describetag :skip
-
     setup do
       plain = Gettext.gettext(FirmosWeb.Gettext, "This sentence has no Polish translation")
 

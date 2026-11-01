@@ -119,7 +119,11 @@ defmodule FirmosWeb.Features.OwnerAccountTest do
     end
 
     test "shows an email format error on the form", %{view: view} do
-      assert has_element?(view, "#registration_form p", "must have the @ sign and no spaces")
+      assert has_element?(
+               view,
+               "#registration_form p",
+               "musi zawierać znak @ i nie może zawierać spacji"
+             )
     end
 
     test "does not create an account" do

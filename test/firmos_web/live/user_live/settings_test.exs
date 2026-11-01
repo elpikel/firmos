@@ -12,8 +12,8 @@ defmodule FirmosWeb.UserLive.SettingsTest do
         |> log_in_user(user_fixture())
         |> live(~p"/users/settings")
 
-      assert html =~ "Change Email"
-      assert html =~ "Save Password"
+      assert html =~ "Zmień e-mail"
+      assert html =~ "Zapisz hasło"
     end
 
     test "redirects if user is not logged in", %{conn: conn} do
@@ -21,7 +21,7 @@ defmodule FirmosWeb.UserLive.SettingsTest do
 
       assert {:redirect, %{to: path, flash: flash}} = redirect
       assert path == ~p"/users/log-in"
-      assert %{"error" => "You must log in to access this page."} = flash
+      assert %{"error" => "Zaloguj się, aby zobaczyć tę stronę."} = flash
     end
 
     test "redirects if user is not in sudo mode", %{conn: conn} do
@@ -33,7 +33,7 @@ defmodule FirmosWeb.UserLive.SettingsTest do
         |> live(~p"/users/settings")
         |> follow_redirect(conn, ~p"/users/log-in")
 
-      assert conn.resp_body =~ "You must re-authenticate to access this page."
+      assert conn.resp_body =~ "Zaloguj się ponownie, aby zobaczyć tę stronę."
     end
   end
 
@@ -55,7 +55,7 @@ defmodule FirmosWeb.UserLive.SettingsTest do
         })
         |> render_submit()
 
-      assert result =~ "A link to confirm your email"
+      assert result =~ "Link potwierdzający zmianę adresu e-mail"
       assert Accounts.get_user_by_email(user.email)
     end
 
@@ -70,8 +70,8 @@ defmodule FirmosWeb.UserLive.SettingsTest do
           "user" => %{"email" => "with spaces"}
         })
 
-      assert result =~ "Change Email"
-      assert result =~ "must have the @ sign and no spaces"
+      assert result =~ "Zmień e-mail"
+      assert result =~ "musi zawierać znak @ i nie może zawierać spacji"
     end
 
     test "renders errors with invalid data (phx-submit)", %{conn: conn, user: user} do
@@ -84,8 +84,8 @@ defmodule FirmosWeb.UserLive.SettingsTest do
         })
         |> render_submit()
 
-      assert result =~ "Change Email"
-      assert result =~ "did not change"
+      assert result =~ "Zmień e-mail"
+      assert result =~ "nie zostało zmienione"
     end
   end
 
@@ -118,7 +118,7 @@ defmodule FirmosWeb.UserLive.SettingsTest do
       assert get_session(new_password_conn, :user_token) != get_session(conn, :user_token)
 
       assert Phoenix.Flash.get(new_password_conn.assigns.flash, :info) =~
-               "Password updated successfully"
+               "Hasło zostało zmienione"
 
       assert Accounts.get_user_by_email_and_password(user.email, new_password)
     end
@@ -136,9 +136,9 @@ defmodule FirmosWeb.UserLive.SettingsTest do
           }
         })
 
-      assert result =~ "Save Password"
-      assert result =~ "should be at least 12 character(s)"
-      assert result =~ "does not match password"
+      assert result =~ "Zapisz hasło"
+      assert result =~ "powinno mieć co najmniej 12 znaków"
+      assert result =~ "nie zgadza się z hasłem"
     end
 
     test "renders errors with invalid data (phx-submit)", %{conn: conn} do
@@ -154,9 +154,9 @@ defmodule FirmosWeb.UserLive.SettingsTest do
         })
         |> render_submit()
 
-      assert result =~ "Save Password"
-      assert result =~ "should be at least 12 character(s)"
-      assert result =~ "does not match password"
+      assert result =~ "Zapisz hasło"
+      assert result =~ "powinno mieć co najmniej 12 znaków"
+      assert result =~ "nie zgadza się z hasłem"
     end
   end
 
@@ -179,7 +179,7 @@ defmodule FirmosWeb.UserLive.SettingsTest do
       assert {:live_redirect, %{to: path, flash: flash}} = redirect
       assert path == ~p"/users/settings"
       assert %{"info" => message} = flash
-      assert message == "Email changed successfully."
+      assert message == "Adres e-mail został zmieniony."
       refute Accounts.get_user_by_email(user.email)
       assert Accounts.get_user_by_email(email)
 
@@ -188,7 +188,7 @@ defmodule FirmosWeb.UserLive.SettingsTest do
       assert {:live_redirect, %{to: path, flash: flash}} = redirect
       assert path == ~p"/users/settings"
       assert %{"error" => message} = flash
-      assert message == "Email change link is invalid or it has expired."
+      assert message == "Link do zmiany adresu e-mail jest nieprawidłowy lub wygasł."
     end
 
     test "does not update email with invalid token", %{conn: conn, user: user} do
@@ -196,7 +196,7 @@ defmodule FirmosWeb.UserLive.SettingsTest do
       assert {:live_redirect, %{to: path, flash: flash}} = redirect
       assert path == ~p"/users/settings"
       assert %{"error" => message} = flash
-      assert message == "Email change link is invalid or it has expired."
+      assert message == "Link do zmiany adresu e-mail jest nieprawidłowy lub wygasł."
       assert Accounts.get_user_by_email(user.email)
     end
 
@@ -206,7 +206,7 @@ defmodule FirmosWeb.UserLive.SettingsTest do
       assert {:redirect, %{to: path, flash: flash}} = redirect
       assert path == ~p"/users/log-in"
       assert %{"error" => message} = flash
-      assert message == "You must log in to access this page."
+      assert message == "Zaloguj się, aby zobaczyć tę stronę."
     end
   end
 end
