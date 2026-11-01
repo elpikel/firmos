@@ -23,7 +23,8 @@ msgid "Attempting to reconnect"
 msgstr "Próba ponownego połączenia"
 
 #: lib/firmos_web/components/layouts/root.html.heex:47
-#: lib/firmos_web/live/company_live/profile.ex:59
+#: lib/firmos_web/live/company_live/activity.ex:60
+#: lib/firmos_web/live/company_live/profile.ex:60
 #: lib/firmos_web/live/dashboard_live.ex:19
 #: lib/firmos_web/live/dashboard_live.ex:48
 #, elixir-autogen, elixir-format
@@ -43,7 +44,7 @@ msgstr "Zaloguj się"
 msgid "Log out"
 msgstr "Wyloguj się"
 
-#: lib/firmos_web/live/dashboard_live.ex:94
+#: lib/firmos_web/live/dashboard_live.ex:104
 #, elixir-autogen, elixir-format
 msgid "Nothing here yet"
 msgstr "Na razie nic tu nie ma"
@@ -74,7 +75,7 @@ msgstr "Brak połączenia z internetem"
 msgid "Welcome, %{email}"
 msgstr "Witaj, %{email}"
 
-#: lib/firmos_web/live/dashboard_live.ex:96
+#: lib/firmos_web/live/dashboard_live.ex:106
 #, elixir-autogen, elixir-format
 msgid "Your firm's activity will show up here once you start using Firmos."
 msgstr "Tu pojawi się aktywność Twojej firmy, gdy zaczniesz korzystać z Firmos."
@@ -260,7 +261,7 @@ msgstr "Utwórz konto"
 msgid "Save Password"
 msgstr "Zapisz hasło"
 
-#: lib/firmos_web/live/company_live/profile.ex:90
+#: lib/firmos_web/live/company_live/profile.ex:100
 #: lib/firmos_web/live/home_live.ex:64
 #: lib/firmos_web/live/user_live/settings.ex:66
 #, elixir-autogen, elixir-format
@@ -363,18 +364,20 @@ msgstr "Twój pomysł"
 msgid "Your idea has been saved."
 msgstr "Twój pomysł został zapisany."
 
-#: lib/firmos_web/live/company_live/profile.ex:78
+#: lib/firmos_web/components/activity_components.ex:118
+#: lib/firmos_web/live/company_live/profile.ex:88
 #, elixir-autogen, elixir-format
 msgid "City"
 msgstr "Miasto"
 
-#: lib/firmos_web/live/company_live/profile.ex:76
+#: lib/firmos_web/components/activity_components.ex:116
+#: lib/firmos_web/live/company_live/profile.ex:86
 #, elixir-autogen, elixir-format
 msgid "Company name"
 msgstr "Nazwa firmy"
 
 #: lib/firmos_web/live/company_live/profile.ex:17
-#: lib/firmos_web/live/company_live/profile.ex:62
+#: lib/firmos_web/live/company_live/profile.ex:72
 #, elixir-autogen, elixir-format
 msgid "Company profile"
 msgstr "Profil firmy"
@@ -384,17 +387,19 @@ msgstr "Profil firmy"
 msgid "Company profile saved."
 msgstr "Profil firmy został zapisany."
 
-#: lib/firmos_web/live/company_live/profile.ex:82
+#: lib/firmos_web/components/activity_components.ex:119
+#: lib/firmos_web/live/company_live/profile.ex:92
 #, elixir-autogen, elixir-format
 msgid "Contact email"
 msgstr "E-mail kontaktowy"
 
-#: lib/firmos_web/live/dashboard_live.ex:74
+#: lib/firmos_web/live/dashboard_live.ex:83
 #, elixir-autogen, elixir-format
 msgid "Edit profile"
 msgstr "Edytuj profil"
 
-#: lib/firmos_web/live/company_live/profile.ex:77
+#: lib/firmos_web/components/activity_components.ex:117
+#: lib/firmos_web/live/company_live/profile.ex:87
 #, elixir-autogen, elixir-format
 msgid "Industry"
 msgstr "Branża"
@@ -404,12 +409,12 @@ msgstr "Branża"
 msgid "My company"
 msgstr "Moja firma"
 
-#: lib/firmos_web/live/company_live/profile.ex:92
+#: lib/firmos_web/live/company_live/profile.ex:102
 #, elixir-autogen, elixir-format
 msgid "Save"
 msgstr "Zapisz"
 
-#: lib/firmos_web/live/company_live/profile.ex:65
+#: lib/firmos_web/live/company_live/profile.ex:75
 #, elixir-autogen, elixir-format
 msgid "The basics customers will see about your company."
 msgstr "Podstawowe informacje, które klienci zobaczą o Twojej firmie."
@@ -418,3 +423,82 @@ msgstr "Podstawowe informacje, które klienci zobaczą o Twojej firmie."
 #, elixir-autogen, elixir-format
 msgid "Your company"
 msgstr "Twoja firma"
+
+#: lib/firmos_web/components/activity_components.ex:129
+#, elixir-autogen, elixir-format
+msgid "%{time} UTC"
+msgstr "%{time} UTC"
+
+#: lib/firmos_web/components/activity_components.ex:122
+#: lib/firmos_web/components/activity_components.ex:123
+#, elixir-autogen, elixir-format
+msgid "(empty)"
+msgstr "(puste)"
+
+#: lib/firmos_web/components/activity_components.ex:108
+#, elixir-autogen, elixir-format
+msgid "AI agent"
+msgstr "Agent AI"
+
+#: lib/firmos_web/live/company_live/activity.ex:23
+#: lib/firmos_web/live/company_live/activity.ex:63
+#: lib/firmos_web/live/company_live/profile.ex:68
+#: lib/firmos_web/live/dashboard_live.ex:75
+#, elixir-autogen, elixir-format
+msgid "Activity"
+msgstr "Aktywność"
+
+#: lib/firmos_web/components/activity_components.ex:101
+#, elixir-autogen, elixir-format
+msgid "Company created"
+msgstr "Utworzono firmę"
+
+#: lib/firmos_web/components/activity_components.ex:58
+#, elixir-autogen, elixir-format
+msgid "Created the company “%{name}”."
+msgstr "Utworzono firmę „%{name}”."
+
+#: lib/firmos_web/components/activity_components.ex:90
+#, elixir-autogen, elixir-format
+msgid "Created the company."
+msgstr "Utworzono firmę."
+
+#: lib/firmos_web/live/company_live/activity.ex:66
+#, elixir-autogen, elixir-format
+msgid "Everything done in %{company}, by you or by AI, newest first."
+msgstr "Wszystko, co zrobiono w %{company} – przez Ciebie lub przez AI, od najnowszych."
+
+#: lib/firmos_web/live/company_live/activity.ex:81
+#, elixir-autogen, elixir-format
+msgid "No activity yet. Changes to your company will show up here."
+msgstr "Brak aktywności. Tutaj pojawią się zmiany w Twojej firmie."
+
+#: lib/firmos_web/components/activity_components.ex:107
+#, elixir-autogen, elixir-format
+msgid "Owner"
+msgstr "Właściciel"
+
+#: lib/firmos_web/components/activity_components.ex:102
+#, elixir-autogen, elixir-format
+msgid "Profile updated"
+msgstr "Zaktualizowano profil"
+
+#: lib/firmos_web/components/activity_components.ex:109
+#, elixir-autogen, elixir-format
+msgid "System"
+msgstr "System"
+
+#: lib/firmos_web/components/activity_components.ex:91
+#, elixir-autogen, elixir-format
+msgid "Updated the company profile."
+msgstr "Zaktualizowano profil firmy."
+
+#: lib/firmos_web/live/company_live/activity.ex:94
+#, elixir-autogen, elixir-format
+msgid "Load more"
+msgstr "Pokaż więcej"
+
+#: lib/firmos_web/live/company_live/activity.ex:92
+#, elixir-autogen, elixir-format
+msgid "Loading..."
+msgstr "Wczytuję..."

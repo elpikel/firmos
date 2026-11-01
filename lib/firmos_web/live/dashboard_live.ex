@@ -65,14 +65,24 @@ defmodule FirmosWeb.DashboardLive do
                 {@company.name}
               </h2>
             </div>
-            <.link
-              id="company-profile-link"
-              navigate={~p"/companies/#{@company.id}/profile"}
-              class="inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 px-3 py-1.5 text-sm font-medium text-zinc-700 transition hover:border-zinc-300 hover:bg-zinc-50"
-            >
-              <.icon name="hero-pencil-square" class="size-4" />
-              {gettext("Edit profile")}
-            </.link>
+            <div class="flex shrink-0 items-center gap-2">
+              <.link
+                id="company-activity-link"
+                navigate={~p"/companies/#{@company.id}/activity"}
+                class="inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 px-3 py-1.5 text-sm font-medium text-zinc-700 transition hover:border-zinc-300 hover:bg-zinc-50"
+              >
+                <.icon name="hero-clock" class="size-4" />
+                {gettext("Activity")}
+              </.link>
+              <.link
+                id="company-profile-link"
+                navigate={~p"/companies/#{@company.id}/profile"}
+                class="inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 px-3 py-1.5 text-sm font-medium text-zinc-700 transition hover:border-zinc-300 hover:bg-zinc-50"
+              >
+                <.icon name="hero-pencil-square" class="size-4" />
+                {gettext("Edit profile")}
+              </.link>
+            </div>
           </div>
           <p
             :if={@company.description}

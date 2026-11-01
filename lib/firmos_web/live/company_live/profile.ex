@@ -50,14 +50,24 @@ defmodule FirmosWeb.CompanyLive.Profile do
     <Layouts.app flash={@flash} current_scope={@current_scope}>
       <section id="company-profile" class="mx-auto max-w-xl space-y-8">
         <header class="space-y-2">
-          <.link
-            id="company-profile-back"
-            navigate={~p"/dashboard"}
-            class="inline-flex items-center gap-1 text-sm font-medium text-zinc-500 transition hover:text-zinc-900"
-          >
-            <.icon name="hero-arrow-left" class="size-4" />
-            {gettext("Dashboard")}
-          </.link>
+          <div class="flex items-center justify-between gap-4">
+            <.link
+              id="company-profile-back"
+              navigate={~p"/dashboard"}
+              class="inline-flex items-center gap-1 text-sm font-medium text-zinc-500 transition hover:text-zinc-900"
+            >
+              <.icon name="hero-arrow-left" class="size-4" />
+              {gettext("Dashboard")}
+            </.link>
+            <.link
+              id="company-profile-activity-link"
+              navigate={~p"/companies/#{@company.id}/activity"}
+              class="inline-flex items-center gap-1 text-sm font-medium text-zinc-500 transition hover:text-zinc-900"
+            >
+              <.icon name="hero-clock" class="size-4" />
+              {gettext("Activity")}
+            </.link>
+          </div>
           <h1 class="text-2xl font-semibold tracking-tight text-zinc-900">
             {gettext("Company profile")}
           </h1>

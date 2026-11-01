@@ -8,10 +8,14 @@ defmodule Firmos.Companies do
   that owner's companies.
 
   `update_company/3` is the single write path for profile changes.
+
+  Every change is recorded in the company's activity log (`Firmos.Activity`)
+  in the same transaction as the change itself.
   """
   import Ecto.Query, warn: false
 
   alias Firmos.Accounts.Scope
+  alias Firmos.Activity
   alias Firmos.Companies.Company
   alias Firmos.Ideas
   alias Firmos.Repo
@@ -20,7 +24,7 @@ defmodule Firmos.Companies do
   Turns each of the owner's unclaimed ideas into a company, oldest first, so
   the newest idea becomes the newest company. Each company gets the idea text
   as its description and `default_name` (a translated placeholder supplied by
-  the caller) as its name.
+  the caller) as its name, and a `company_created` activity entry by the owner.
 
   Everything runs in one transaction. Each idea is claimed with a conditional
   update that only matches while it is still unclaimed; ideas another caller
@@ -55,10 +59,14 @@ defmodule Firmos.Companies do
   end
 
   defp create_company_from_idea(%Scope{user: %{id: user_id}} = scope, idea, default_name) do
-    with {:ok, claimed} <- Ideas.claim(scope, idea) do
-      %Company{user_id: user_id, idea_id: claimed.id, description: claimed.text}
-      |> Company.profile_changeset(%{name: default_name})
-      |> Repo.insert()
+    with {:ok, claimed} <- Ideas.claim(scope, idea),
+         {:ok, company} <-
+           %Company{user_id: user_id, idea_id: claimed.id, description: claimed.text}
+           |> Company.profile_changeset(%{name: default_name})
+           |> Repo.insert(),
+         {:ok, _entry} <-
+           Activity.record(company, scope, :company_created, metadata: %{"name" => company.name}) do
+      {:ok, company}
     end
   end
 
@@ -112,13 +120,43 @@ defmodule Firmos.Companies do
   Updates the profile basics of one of the owner's companies. The single
   write path for profile changes. Raises `FunctionClauseError` for a company
   the scope doesn't own.
+
+  In the same transaction it records a `company_updated` activity entry by the
+  owner with each changed field's old and new value. Nothing changed, no entry.
   """
   @spec update_company(%Scope{}, Company.t(), map()) ::
           {:ok, Company.t()} | {:error, Ecto.Changeset.t()}
-  def update_company(%Scope{user: %{id: user_id}}, %Company{user_id: user_id} = company, attrs) do
-    company
-    |> Company.profile_changeset(attrs)
-    |> Repo.update()
+  def update_company(
+        %Scope{user: %{id: user_id}} = scope,
+        %Company{user_id: user_id} = company,
+        attrs
+      ) do
+    changeset = Company.profile_changeset(company, attrs)
+
+    Repo.transact(fn ->
+      with {:ok, updated} <- Repo.update(changeset),
+           {:ok, _entry_or_unchanged} <- record_profile_changes(scope, company, changeset) do
+        {:ok, updated}
+      end
+    end)
+  end
+
+  defp record_profile_changes(scope, company, changeset) do
+    case profile_changes(company, changeset) do
+      changes when map_size(changes) == 0 ->
+        {:ok, :unchanged}
+
+      changes ->
+        Activity.record(company, scope, :company_updated, metadata: %{"changes" => changes})
+    end
+  end
+
+  # Ecto drops a change equal to the current value, so `changes` holds only
+  # the fields that actually changed.
+  defp profile_changes(company, %Ecto.Changeset{changes: changes}) do
+    Map.new(changes, fn {field, new_value} ->
+      {Atom.to_string(field), %{"from" => Map.fetch!(company, field), "to" => new_value}}
+    end)
   end
 
   defp owned_query(%Scope{user: %{id: user_id}}) do
