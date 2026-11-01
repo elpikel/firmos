@@ -13,6 +13,8 @@ defmodule FirmosWeb.ActivityComponents do
 
   alias Firmos.Activity.Entry
 
+  @site_actions [:site_generated, :site_updated, :site_published, :site_undone]
+
   @doc "One activity entry: actor, action, time and summary."
   attr :id, :string, required: true
   attr :entry, Entry, required: true
@@ -88,6 +90,15 @@ defmodule FirmosWeb.ActivityComponents do
     """
   end
 
+  defp summary(%{entry: %Entry{action: action, metadata: %{"version" => version}}} = assigns)
+       when action in @site_actions and is_integer(version) do
+    assigns = assign(assigns, :text, site_summary(action, version))
+
+    ~H"""
+    <p>{@text}</p>
+    """
+  end
+
   defp summary(%{entry: %Entry{action: action}} = assigns) do
     assigns = assign(assigns, :text, fallback_summary(action))
 
@@ -100,6 +111,10 @@ defmodule FirmosWeb.ActivityComponents do
   defp fallback_summary(:company_updated), do: gettext("Updated the company profile.")
   defp fallback_summary(:plan_generated), do: gettext("Generated the business plan.")
   defp fallback_summary(:plan_regenerated), do: gettext("Requested a new business plan.")
+  defp fallback_summary(:site_generated), do: gettext("Generated the website draft.")
+  defp fallback_summary(:site_updated), do: gettext("Edited the website.")
+  defp fallback_summary(:site_published), do: gettext("Published the website.")
+  defp fallback_summary(:site_undone), do: gettext("Undid a website change.")
   # An action without a renderer yet must not break the whole log page; the
   # test over `Entry.actions/0` catches the missing clause.
   defp fallback_summary(_action), do: ""
@@ -110,6 +125,18 @@ defmodule FirmosWeb.ActivityComponents do
   defp plan_summary(:plan_regenerated, version),
     do: gettext("Requested version %{version} of the business plan.", version: version)
 
+  defp site_summary(:site_generated, version),
+    do: gettext("Generated version %{version} of the website.", version: version)
+
+  defp site_summary(:site_updated, version),
+    do: gettext("Saved version %{version} of the website.", version: version)
+
+  defp site_summary(:site_published, version),
+    do: gettext("Published version %{version} of the website.", version: version)
+
+  defp site_summary(:site_undone, version),
+    do: gettext("Restored the website as version %{version}.", version: version)
+
   @doc """
   The translated label for an action; an action without a label yet shows
   as stored rather than crashing the log.
@@ -119,6 +146,10 @@ defmodule FirmosWeb.ActivityComponents do
   def action_label(:company_updated), do: gettext("Profile updated")
   def action_label(:plan_generated), do: gettext("Plan generated")
   def action_label(:plan_regenerated), do: gettext("New plan requested")
+  def action_label(:site_generated), do: gettext("Website generated")
+  def action_label(:site_updated), do: gettext("Website edited")
+  def action_label(:site_published), do: gettext("Website published")
+  def action_label(:site_undone), do: gettext("Website change undone")
   def action_label(action) when is_atom(action), do: Atom.to_string(action)
 
   @doc "The translated label for an actor."

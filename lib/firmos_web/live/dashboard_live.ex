@@ -135,6 +135,14 @@ defmodule FirmosWeb.DashboardLive do
                 {gettext("Business plan")}
               </.link>
               <.link
+                id="company-site-link"
+                navigate={~p"/companies/#{@company.id}/site"}
+                class="inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 px-3 py-1.5 text-sm font-medium text-zinc-700 transition hover:border-zinc-300 hover:bg-zinc-50"
+              >
+                <.icon name="hero-globe-alt" class="size-4" />
+                {gettext("Website")}
+              </.link>
+              <.link
                 id="company-activity-link"
                 navigate={~p"/companies/#{@company.id}/activity"}
                 class="inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 px-3 py-1.5 text-sm font-medium text-zinc-700 transition hover:border-zinc-300 hover:bg-zinc-50"

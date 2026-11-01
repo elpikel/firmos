@@ -63,7 +63,6 @@ defmodule FirmosWeb.Features.LandingPageTest do
   # ---------------------------------------------------------------------
 
   describe "Scenario: AC1 — the owner clicks \"create website\" with a ready plan" do
-    @describetag :skip
     setup :register_and_log_in_user
 
     setup %{conn: conn, scope: scope} do
@@ -89,7 +88,6 @@ defmodule FirmosWeb.Features.LandingPageTest do
   end
 
   describe "Scenario: AC1 — the draft is generated while the website section is open" do
-    @describetag :skip
     setup :register_and_log_in_user
 
     setup %{conn: conn, scope: scope} do
@@ -148,7 +146,6 @@ defmodule FirmosWeb.Features.LandingPageTest do
   end
 
   describe "Scenario: AC1 — the owner opens the website section from the dashboard" do
-    @describetag :skip
     setup :register_and_log_in_user
 
     setup %{conn: conn, scope: scope} do
@@ -165,7 +162,6 @@ defmodule FirmosWeb.Features.LandingPageTest do
   end
 
   describe "Scenario: AC1 — the owner opens the website section from the plan" do
-    @describetag :skip
     setup :register_and_log_in_user
 
     setup %{conn: conn, scope: scope} do
@@ -182,7 +178,6 @@ defmodule FirmosWeb.Features.LandingPageTest do
   end
 
   describe "Scenario: AC2 — the owner opens the preview of a draft" do
-    @describetag :skip
     setup :register_and_log_in_user
 
     setup %{conn: conn, scope: scope} do
@@ -208,7 +203,6 @@ defmodule FirmosWeb.Features.LandingPageTest do
   end
 
   describe "Scenario: AC2 — the website section links to the preview" do
-    @describetag :skip
     setup :register_and_log_in_user
 
     setup %{conn: conn, scope: scope} do
@@ -228,7 +222,6 @@ defmodule FirmosWeb.Features.LandingPageTest do
   # ---------------------------------------------------------------------
 
   describe "Scenario: AC3 — rejecting \"create website\" for a company without a plan" do
-    @describetag :skip
     setup :register_and_log_in_user
 
     setup %{conn: conn, scope: scope} do
@@ -248,8 +241,6 @@ defmodule FirmosWeb.Features.LandingPageTest do
   end
 
   describe "Scenario: AC3 — rejecting a generation request without a plan" do
-    @describetag :skip
-
     setup do
       scope = user_scope_fixture()
       company = company_fixture(scope)
@@ -267,7 +258,6 @@ defmodule FirmosWeb.Features.LandingPageTest do
   end
 
   describe "Scenario: AC4 — rejecting a draft when the AI provider returns an error" do
-    @describetag :skip
     setup :register_and_log_in_user
 
     setup %{conn: conn, scope: scope} do
@@ -299,7 +289,6 @@ defmodule FirmosWeb.Features.LandingPageTest do
   end
 
   describe "Scenario: AC4 — rejecting a draft the AI returned in the wrong shape" do
-    @describetag :skip
     setup :register_and_log_in_user
 
     setup %{conn: conn, scope: scope} do
@@ -322,7 +311,6 @@ defmodule FirmosWeb.Features.LandingPageTest do
   end
 
   describe "Scenario: AC4 — the owner tries again after a failure" do
-    @describetag :skip
     setup :register_and_log_in_user
 
     setup %{conn: conn, scope: scope} do
@@ -351,7 +339,6 @@ defmodule FirmosWeb.Features.LandingPageTest do
   end
 
   describe "Scenario: rejecting another owner's website section" do
-    @describetag :skip
     setup :register_and_log_in_user
 
     setup do
@@ -366,7 +353,6 @@ defmodule FirmosWeb.Features.LandingPageTest do
   end
 
   describe "Scenario: rejecting another owner's preview" do
-    @describetag :skip
     setup :register_and_log_in_user
 
     setup do

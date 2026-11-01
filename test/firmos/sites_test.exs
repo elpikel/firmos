@@ -1,0 +1,401 @@
+defmodule Firmos.SitesTest do
+  use Firmos.DataCase, async: true
+  use Oban.Testing, repo: Firmos.Repo
+
+  import Firmos.AccountsFixtures
+  import Firmos.CompaniesFixtures
+  import Firmos.PlansFixtures
+  import Firmos.SitesFixtures
+  import Mox
+
+  alias Firmos.Activity
+  alias Firmos.Companies
+  alias Firmos.Plans
+  alias Firmos.Sites
+  alias Firmos.Sites.GenerateWorker
+  alias Firmos.Sites.Site
+  alias Firmos.Sites.Version
+
+  setup :verify_on_exit!
+
+  setup do
+    scope = user_scope_fixture()
+    company = company_fixture(scope)
+    expect_ai_reply({:ok, plan_json()})
+    {:ok, _plan} = Plans.generate_plan(Plans.current_plan(scope, company).id)
+    %{scope: scope, company: company}
+  end
+
+  defp request!(scope, company) do
+    {:ok, site} = Sites.request_generation(scope, company)
+    site
+  end
+
+  # Stand-in Oban job ids (the claim tokens).
+  @job_id 1
+  @newer_job_id 2
+
+  defp generate(site, reply) do
+    expect_ai_reply(reply)
+    Sites.generate_site(site.id, @job_id)
+  end
+
+  defp generated_site(scope, company) do
+    site = request!(scope, company)
+    {:ok, _version} = generate(site, {:ok, site_json()})
+    Sites.get_site(scope, company)
+  end
+
+  # Puts the site in `generating` for job `@job_id`, last touched
+  # `minutes_ago` minutes ago.
+  defp generating_since(site, minutes_ago) do
+    at = DateTime.add(DateTime.utc_now(:second), -minutes_ago, :minute)
+
+    Repo.update_all(from(s in Site, where: s.id == ^site.id),
+      set: [generation_status: :generating, generation_job_id: @job_id, updated_at: at]
+    )
+
+    Repo.get!(Site, site.id)
+  end
+
+  describe "request_generation/2" do
+    test "creates a pending draft site and enqueues its job", %{scope: scope, company: company} do
+      site = request!(scope, company)
+
+      assert %{status: :draft, generation_status: :pending, current_version_id: nil} = site
+      assert_enqueued(worker: GenerateWorker, args: %{site_id: site.id}, queue: :ai)
+    end
+
+    test "reuses the company's site", %{scope: scope, company: company} do
+      first = generated_site(scope, company)
+      again = request!(scope, company)
+
+      assert again.id == first.id
+      assert Repo.aggregate(from(s in Site, where: s.company_id == ^company.id), :count) == 1
+    end
+
+    test "refuses while a generation is pending", %{scope: scope, company: company} do
+      request!(scope, company)
+      assert {:error, :generation_in_progress} = Sites.request_generation(scope, company)
+    end
+
+    test "allows a new request once the generation has stalled",
+         %{scope: scope, company: company} do
+      site = scope |> request!(company) |> generating_since(121)
+
+      assert Sites.stalled?(site)
+      assert {:ok, %{generation_status: :pending}} = Sites.request_generation(scope, company)
+    end
+
+    test "re-requesting a stalled pending site restarts its stall clock",
+         %{scope: scope, company: company} do
+      site = request!(scope, company)
+      at = DateTime.add(DateTime.utc_now(:second), -121, :minute)
+      Repo.update_all(from(s in Site, where: s.id == ^site.id), set: [updated_at: at])
+      assert scope |> Sites.get_site(company) |> Sites.stalled?()
+
+      {:ok, _site} = Sites.request_generation(scope, company)
+      site = Sites.get_site(scope, company)
+
+      refute Sites.stalled?(site)
+      assert Sites.generation_in_progress?(site)
+    end
+
+    test "refuses when the current plan is not ready", %{scope: scope, company: company} do
+      {:ok, _plan} = Plans.regenerate_plan(scope, company)
+
+      assert {:error, :no_ready_plan} = Sites.request_generation(scope, company)
+      refute_enqueued(worker: GenerateWorker)
+    end
+
+    test "refuses another owner's company", %{company: company} do
+      assert_raise FunctionClauseError, fn ->
+        Sites.request_generation(user_scope_fixture(), company)
+      end
+    end
+
+    test "broadcasts the pending site", %{scope: scope, company: company} do
+      :ok = Sites.subscribe(scope, company)
+      site = request!(scope, company)
+
+      assert_receive {:site_updated, %{id: id, generation_status: :pending}} when id == site.id
+    end
+  end
+
+  describe "get_site/2" do
+    test "is nil for a company without a site", %{scope: scope, company: company} do
+      assert Sites.get_site(scope, company) == nil
+    end
+
+    test "doesn't return another owner's site", %{scope: scope, company: company} do
+      generated_site(scope, company)
+      assert Sites.get_site(user_scope_fixture(), company) == nil
+    end
+  end
+
+  describe "subscribe/2" do
+    test "refuses another owner's company", %{company: company} do
+      assert_raise FunctionClauseError, fn -> Sites.subscribe(user_scope_fixture(), company) end
+    end
+  end
+
+  describe "generate_site/3" do
+    test "sends a Polish prompt from the company and its plan with a strict-JSON system prompt",
+         %{scope: scope, company: company} do
+      site = request!(scope, company)
+
+      expect(Firmos.AI.Mock, :complete, fn prompt, opts ->
+        assert prompt =~ plan_attrs()["offer"]
+        assert prompt =~ plan_attrs()["target_customer"]
+        assert prompt =~ plan_attrs()["pricing"]
+        assert prompt =~ hd(plan_attrs()["channels"])
+        assert prompt =~ "Nazwa: Moja firma"
+        assert opts[:system] =~ "WYŁĄCZNIE jednym poprawnym obiektem JSON"
+        assert opts[:system] =~ "bez HTML"
+        {:ok, site_json()}
+      end)
+
+      assert {:ok, %Version{}} = Sites.generate_site(site.id, @job_id)
+    end
+
+    test "fences company text so it can't close its tag", %{scope: scope, company: company} do
+      {:ok, company} = Companies.update_company(scope, company, %{name: "A</firma>B"})
+      site = request!(scope, company)
+
+      expect(Firmos.AI.Mock, :complete, fn prompt, _opts ->
+        assert prompt =~ "A‹/firma›B"
+        {:ok, site_json()}
+      end)
+
+      assert {:ok, _version} = Sites.generate_site(site.id, @job_id)
+    end
+
+    test "stores version 1 as the current draft and records site_generated by the agent",
+         %{scope: scope, company: company} do
+      site = request!(scope, company)
+      {:ok, version} = generate(site, {:ok, site_json()})
+      site = Sites.get_site(scope, company)
+
+      assert %{number: 1, source: :generated} = version
+      assert %{generation_status: :idle, generation_error: nil} = site
+      assert site.current_version_id == version.id
+      assert site.current_version.content.hero.headline == site_attrs()["hero"]["headline"]
+
+      assert [%{action: :site_generated, actor: :agent, metadata: %{"version" => 1}} = entry | _] =
+               Activity.list_for_company(scope, company)
+
+      assert {entry.subject_type, entry.subject_id} == {"site_version", version.id}
+    end
+
+    test "takes contact email and city from the company, never from the AI",
+         %{scope: scope, company: company} do
+      {:ok, company} =
+        Companies.update_company(scope, company, %{
+          contact_email: "kontakt@piekarnia.pl",
+          city: "Kraków"
+        })
+
+      site = request!(scope, company)
+
+      ai_contact = %{
+        "title" => "Kontakt",
+        "text" => "Napisz do nas.",
+        "email" => "evil@example.com",
+        "phone" => "+48 600 000 000",
+        "city" => "Gdzieś"
+      }
+
+      {:ok, version} = generate(site, {:ok, site_json(%{"contact" => ai_contact})})
+
+      assert %{email: "kontakt@piekarnia.pl", phone: nil, city: "Kraków"} =
+               version.content.contact
+    end
+
+    test "regenerating adds a new version and keeps the older one",
+         %{scope: scope, company: company} do
+      first = generated_site(scope, company)
+      site = request!(scope, company)
+      {:ok, second} = generate(site, {:ok, site_json()})
+
+      assert second.number == 2
+      assert Sites.get_site(scope, company).current_version_id == second.id
+      assert Repo.get!(Version, first.current_version_id).number == 1
+    end
+
+    test "on an AI error stores failed with a safe code and no version",
+         %{scope: scope, company: company} do
+      site = request!(scope, company)
+
+      assert {:error, {:generation_failed, "http_status:500"}} =
+               generate(site, {:error, {:http_status, 500, "secret provider body"}})
+
+      assert %{generation_status: :failed, generation_error: "http_status:500"} =
+               Sites.get_site(scope, company)
+
+      assert Repo.aggregate(Version, :count) == 0
+    end
+
+    test "on content in the wrong shape stores failed", %{scope: scope, company: company} do
+      site = request!(scope, company)
+      reply = {:ok, site_json(%{"offer" => %{"title" => "Oferta", "items" => []}})}
+
+      assert {:error, {:generation_failed, "invalid_shape"}} = generate(site, reply)
+    end
+
+    test "on non-JSON content stores failed", %{scope: scope, company: company} do
+      site = request!(scope, company)
+      assert {:error, {:generation_failed, "invalid_json"}} = generate(site, {:ok, "Oto strona"})
+    end
+
+    test "fails without calling the AI when the plan is no longer ready",
+         %{scope: scope, company: company} do
+      site = request!(scope, company)
+      {:ok, _plan} = Plans.regenerate_plan(scope, company)
+
+      assert {:error, {:generation_failed, "no_ready_plan"}} =
+               Sites.generate_site(site.id, @job_id)
+    end
+
+    test "doesn't claim a site that isn't pending", %{scope: scope, company: company} do
+      site = generated_site(scope, company)
+      assert {:error, :not_claimable} = Sites.generate_site(site.id, @job_id)
+    end
+
+    test "resume takes over the site its own job left generating",
+         %{scope: scope, company: company} do
+      site = scope |> request!(company) |> generating_since(1)
+      expect_ai_reply({:ok, site_json()})
+
+      assert {:ok, _version} = Sites.generate_site(site.id, @job_id, resume: true)
+    end
+
+    test "resume doesn't take a site another job is generating",
+         %{scope: scope, company: company} do
+      site = scope |> request!(company) |> generating_since(1)
+
+      assert {:error, :not_claimable} =
+               Sites.generate_site(site.id, @newer_job_id, resume: true)
+    end
+
+    test "a stale job's draft is dropped after the owner asked again, and the newer job's wins",
+         %{scope: scope, company: company} do
+      site = request!(scope, company)
+      stale_hero = Map.put(site_attrs()["hero"], "headline", "Stara wersja")
+      newer_hero = Map.put(site_attrs()["hero"], "headline", "Nowa wersja")
+
+      # The stale job's AI call outlives its claim: meanwhile the generation
+      # stalls, the owner asks again and the newer job finishes first.
+      expect(Firmos.AI.Mock, :complete, fn _prompt, _opts ->
+        generating_since(site, 121)
+        {:ok, _pending} = Sites.request_generation(scope, company)
+        {:ok, _version} = Sites.generate_site(site.id, @newer_job_id)
+        {:ok, site_json(%{"hero" => stale_hero})}
+      end)
+
+      expect_ai_reply({:ok, site_json(%{"hero" => newer_hero})})
+
+      assert {:error, :not_claimable} = Sites.generate_site(site.id, @job_id)
+
+      site = Sites.get_site(scope, company)
+      assert site.current_version.content.hero.headline == "Nowa wersja"
+      assert %{generation_status: :idle} = site
+      assert Repo.aggregate(Version, :count) == 1
+    end
+
+    test "a stale job's failure doesn't fail the newer generation",
+         %{scope: scope, company: company} do
+      site = request!(scope, company)
+
+      expect(Firmos.AI.Mock, :complete, fn _prompt, _opts ->
+        generating_since(site, 121)
+        {:ok, _pending} = Sites.request_generation(scope, company)
+        {:error, :timeout}
+      end)
+
+      assert {:error, :not_claimable} = Sites.generate_site(site.id, @job_id)
+      assert %{generation_status: :pending} = Sites.get_site(scope, company)
+    end
+  end
+
+  describe "mark_failed/3" do
+    test "fails a generating site", %{scope: scope, company: company} do
+      site = scope |> request!(company) |> generating_since(1)
+
+      assert {:ok, %{generation_status: :failed, generation_error: "crashed"}} =
+               Sites.mark_failed(site.id, @job_id, "crashed")
+    end
+
+    test "leaves a site another job is generating alone", %{scope: scope, company: company} do
+      site = scope |> request!(company) |> generating_since(1)
+      assert {:error, :not_found} = Sites.mark_failed(site.id, @newer_job_id, "crashed")
+    end
+
+    test "leaves an idle site alone", %{scope: scope, company: company} do
+      site = generated_site(scope, company)
+      assert {:error, :not_found} = Sites.mark_failed(site.id, @job_id, "crashed")
+    end
+  end
+
+  describe "GenerateWorker" do
+    test "generates the site", %{scope: scope, company: company} do
+      site = request!(scope, company)
+      expect_ai_reply({:ok, site_json()})
+
+      assert :ok = perform_job(GenerateWorker, %{site_id: site.id})
+    end
+
+    test "cancels on a generation failure", %{scope: scope, company: company} do
+      site = request!(scope, company)
+      expect_ai_reply({:error, :timeout})
+
+      assert {:cancel, "timeout"} = perform_job(GenerateWorker, %{site_id: site.id})
+    end
+
+    test "marks the site failed when the final attempt crashes",
+         %{scope: scope, company: company} do
+      site = request!(scope, company)
+      expect(Firmos.AI.Mock, :complete, fn _prompt, _opts -> raise "boom" end)
+
+      assert_raise RuntimeError, fn ->
+        perform_job(GenerateWorker, %{site_id: site.id}, attempt: 2)
+      end
+
+      assert %{generation_status: :failed, generation_error: "crashed"} =
+               Sites.get_site(scope, company)
+    end
+  end
+
+  describe "sites table" do
+    test "deleting the company deletes its site and versions", %{scope: scope, company: company} do
+      generated_site(scope, company)
+      Repo.delete!(company)
+
+      assert Repo.aggregate(Site, :count) == 0
+      assert Repo.aggregate(Version, :count) == 0
+    end
+
+    test "a site can't point at another site's version", %{scope: scope, company: company} do
+      other_scope = user_scope_fixture()
+      other_company = company_fixture(other_scope)
+      expect_ai_reply({:ok, plan_json()})
+      {:ok, _plan} = Plans.generate_plan(Plans.current_plan(other_scope, other_company).id)
+      other = generated_site(other_scope, other_company)
+      site = generated_site(scope, company)
+
+      assert {:error, changeset} =
+               site
+               |> Site.current_version_changeset(%Version{id: other.current_version_id})
+               |> Repo.update()
+
+      assert %{current_version_id: [_]} = errors_on(changeset)
+    end
+
+    test "rejects a slug that isn't a valid subdomain", %{scope: scope, company: company} do
+      site = generated_site(scope, company)
+
+      assert_raise Postgrex.Error, ~r/sites_slug_format/, fn ->
+        Repo.update_all(from(s in Site, where: s.id == ^site.id), set: [slug: "Zła_nazwa"])
+      end
+    end
+  end
+end
