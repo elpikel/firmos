@@ -41,8 +41,6 @@ defmodule Firmos.Features.AiProviderAdapterTest do
   # ---------------------------------------------------------------------
 
   describe "Scenario: AC1 — the app requests a completion with a configured key" do
-    @describetag :skip
-
     setup do
       stub_messages_api(200, completion_body(["Plan dla ", "piekarni"]))
       result = Claude.complete("Napisz plan", system: "Jesteś doradcą")
@@ -89,8 +87,6 @@ defmodule Firmos.Features.AiProviderAdapterTest do
   end
 
   describe "Scenario: AC1 — a completion without a system prompt" do
-    @describetag :skip
-
     setup do
       stub_messages_api(200, completion_body(["ok"]))
       {:ok, _text} = Claude.complete("Napisz plan", [])
@@ -105,8 +101,6 @@ defmodule Firmos.Features.AiProviderAdapterTest do
   end
 
   describe "Scenario: AC3 — a feature generates AI content in the test environment" do
-    @describetag :skip
-
     setup do
       Mox.expect(Firmos.AI.Mock, :complete, fn "Napisz plan", [system: "s"] ->
         {:ok, "z mocka"}
@@ -129,8 +123,6 @@ defmodule Firmos.Features.AiProviderAdapterTest do
   # ---------------------------------------------------------------------
 
   describe "Scenario: AC2 — rejecting a completion when the provider returns a 5xx" do
-    @describetag :skip
-
     setup do
       stub_messages_api(500, %{
         "type" => "error",
@@ -146,8 +138,6 @@ defmodule Firmos.Features.AiProviderAdapterTest do
   end
 
   describe "Scenario: AC2 — rejecting a completion when the provider times out" do
-    @describetag :skip
-
     setup do
       Req.Test.stub(Claude, &Req.Test.transport_error(&1, :timeout))
 
@@ -160,8 +150,6 @@ defmodule Firmos.Features.AiProviderAdapterTest do
   end
 
   describe "Scenario: AC2 — rejecting a completion when no API key is configured" do
-    @describetag :skip
-
     setup do
       stub_messages_api(200, completion_body(["never"]))
 

@@ -29,6 +29,15 @@ config :firmos, Firmos.Mailer, adapter: Swoosh.Adapters.Test
 # Disable swoosh api client as it is only required for production adapters
 config :swoosh, :api_client, false
 
+# AI never touches the network in test: features get the Mox mock, and the
+# Claude adapter's own tests go through Req.Test stubs with retries off.
+config :firmos, Firmos.AI, adapter: Firmos.AI.Mock
+
+config :firmos, Firmos.AI.Claude,
+  api_key: "test-anthropic-key",
+  retry: false,
+  req_options: [plug: {Req.Test, Firmos.AI.Claude}]
+
 # Print only warnings and errors during test
 config :logger, level: :warning
 
