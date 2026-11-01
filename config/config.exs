@@ -28,6 +28,19 @@ config :firmos,
 # without a Polish translation falls back to English.
 config :firmos, FirmosWeb.Gettext, default_locale: "pl"
 
+# AI provider. The adapter is resolved at call time; the API key is set in
+# config/runtime.exs.
+config :firmos, Firmos.AI, adapter: Firmos.AI.Claude
+
+config :firmos, Firmos.AI.Claude,
+  base_url: "https://api.anthropic.com",
+  model: "claude-sonnet-5-5",
+  max_tokens: 16_000,
+  # Non-streaming: the timeout caps the whole generation (16k tokens incl. thinking can exceed 2 min).
+  receive_timeout: 600_000,
+  retry: true,
+  max_retries: 2
+
 # Configure the endpoint
 config :firmos, FirmosWeb.Endpoint,
   url: [host: "localhost"],

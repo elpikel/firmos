@@ -23,6 +23,29 @@ end
 config :firmos, FirmosWeb.Endpoint,
   http: [port: String.to_integer(System.get_env("PORT", "4000"))]
 
+# Anthropic API key for Firmos.AI.Claude. Required in prod; optional in
+# other envs (AI calls then answer {:error, :missing_api_key}). Test never
+# reads it, so no feature can reach the real API.
+if config_env() == :prod do
+  anthropic_api_key =
+    case System.get_env("ANTHROPIC_API_KEY") do
+      key when key in [nil, ""] ->
+        raise """
+        environment variable ANTHROPIC_API_KEY is missing.
+        Create one at https://console.anthropic.com/settings/keys
+        """
+
+      key ->
+        key
+    end
+
+  config :firmos, Firmos.AI.Claude, api_key: anthropic_api_key
+else
+  if config_env() != :test do
+    config :firmos, Firmos.AI.Claude, api_key: System.get_env("ANTHROPIC_API_KEY")
+  end
+end
+
 if config_env() == :prod do
   database_url =
     System.get_env("DATABASE_URL") ||
