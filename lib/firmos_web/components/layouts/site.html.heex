@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="pl" data-theme="light">
+  <%!-- Root layout of a company's landing page: the owner's draft preview
+        and the public page (STORY-009). No app chrome and no JavaScript, so
+        the preview looks exactly like the public page. --%>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <.live_title default="Firmos">{assigns[:page_title]}</.live_title>
+    <link phx-track-static rel="stylesheet" href={~p"/assets/css/app.css"} />
+  </head>
+  <body>
+    {@inner_content}
+  </body>
+</html>

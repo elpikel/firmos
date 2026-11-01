@@ -9,6 +9,7 @@ defmodule Firmos.Plans.Prompt do
   replaced so they can't close the fence.
   """
 
+  alias Firmos.AI.Prompt, as: AIPrompt
   alias Firmos.Companies.Company
 
   @system """
@@ -51,10 +52,7 @@ defmodule Firmos.Plans.Prompt do
     """
   end
 
-  defp present(value) when is_binary(value) and value != "", do: neutralize_tags(value)
+  # Owner text must not close the <opis> fence (or open another tag).
+  defp present(value) when is_binary(value) and value != "", do: AIPrompt.neutralize_tags(value)
   defp present(_blank), do: "(nie podano)"
-
-  # Owner text must not close the <opis> fence (or open another tag), so
-  # angle brackets become look-alike guillemets.
-  defp neutralize_tags(text), do: text |> String.replace("<", "‹") |> String.replace(">", "›")
 end

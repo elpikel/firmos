@@ -230,6 +230,25 @@ defmodule Firmos.PlansTest do
     end
   end
 
+  describe "ready_plan/2" do
+    test "is the current plan once it is ready", %{scope: scope, company: company, plan: plan} do
+      assert {:error, :no_ready_plan} = Plans.ready_plan(scope, company)
+      {:ok, _ready} = generate(plan, {:ok, plan_json()})
+      assert {:ok, %{id: id, status: :ready}} = Plans.ready_plan(scope, company)
+      assert id == plan.id
+    end
+
+    test "is refused while a newer version generates", %{
+      scope: scope,
+      company: company,
+      plan: plan
+    } do
+      {:ok, _ready} = generate(plan, {:ok, plan_json()})
+      {:ok, _v2} = Plans.regenerate_plan(scope, company)
+      assert {:error, :no_ready_plan} = Plans.ready_plan(scope, company)
+    end
+  end
+
   describe "mark_failed/2" do
     test "fails a plan still in progress", %{plan: plan} do
       assert {:ok, %{status: :failed, error: "not_stored"}} =

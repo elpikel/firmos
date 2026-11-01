@@ -32,6 +32,6 @@ defmodule FirmosWeb.ActivityComponentsTest do
   end
 
   test "an action without a label shows as stored" do
-    assert ActivityComponents.action_label(:site_published) == "site_published"
+    assert ActivityComponents.action_label(:not_an_action) == "not_an_action"
   end
 end

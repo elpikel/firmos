@@ -20,6 +20,7 @@ defmodule Firmos.Plans do
   alias Firmos.Accounts.Scope
   alias Firmos.Activity
   alias Firmos.AI
+  alias Firmos.AI.ErrorCode
   alias Firmos.Companies.Company
   alias Firmos.Plans.Content
   alias Firmos.Plans.GenerateWorker
@@ -69,6 +70,18 @@ defmodule Firmos.Plans do
     |> company_plans_query(company)
     |> limit(1)
     |> Repo.one()
+  end
+
+  @doc """
+  The company's current plan when it is ready (generated and usable, e.g.
+  to write a website from), else `{:error, :no_ready_plan}`.
+  """
+  @spec ready_plan(%Scope{}, Company.t()) :: {:ok, Plan.t()} | {:error, :no_ready_plan}
+  def ready_plan(%Scope{} = scope, %Company{} = company) do
+    case current_plan(scope, company) do
+      %Plan{status: :ready} = plan -> {:ok, plan}
+      _none_or_not_ready -> {:error, :no_ready_plan}
+    end
   end
 
   @doc "All of the company's plan versions, newest first."
@@ -188,7 +201,7 @@ defmodule Firmos.Plans do
 
       case request_content(plan.company) do
         {:ok, content} -> store_ready(plan, content)
-        {:error, reason} -> store_failed(plan, error_code(reason))
+        {:error, reason} -> store_failed(plan, ErrorCode.from_reason(reason))
       end
     end
   end
@@ -251,30 +264,6 @@ defmodule Firmos.Plans do
       {:error, {:generation_failed, code}}
     end
   end
-
-  # Only codes leave this module: provider bodies, partial text and refusal
-  # details can hold anything, so none of it is stored or shown.
-  defp error_code({:http_status, status, _summary}) when is_integer(status),
-    do: "http_status:#{status}"
-
-  defp error_code({:refusal, _details}), do: "refusal"
-  defp error_code({:truncated, _text}), do: "truncated"
-  defp error_code({:unexpected_body, _summary}), do: "unexpected_body"
-  defp error_code({:missing_config, _keys}), do: "missing_config"
-
-  defp error_code(reason)
-       when reason in [
-              :invalid_json,
-              :invalid_shape,
-              :empty_response,
-              :missing_api_key,
-              :timeout,
-              :econnrefused,
-              :closed
-            ],
-       do: Atom.to_string(reason)
-
-  defp error_code(_other), do: "provider_error"
 
   defp insert_and_enqueue(company_id, version) do
     with {:ok, plan} <- company_id |> Plan.new_changeset(version) |> Repo.insert(),

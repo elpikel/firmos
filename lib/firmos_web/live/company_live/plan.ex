@@ -155,18 +155,28 @@ defmodule FirmosWeb.CompanyLive.Plan do
                 </span>
               </p>
             </div>
-            <button
-              :if={not in_progress?(@latest)}
-              id="plan-regenerate"
-              type="button"
-              phx-click="regenerate"
-              phx-disable-with={gettext("Starting...")}
-              data-confirm={@latest && gettext("Generate a new version? This one will be kept.")}
-              class="inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium text-zinc-700 shadow-sm transition hover:border-zinc-300 hover:bg-zinc-50 active:scale-[0.98]"
-            >
-              <.icon name="hero-arrow-path" class="size-4" />
-              {if @latest, do: gettext("Regenerate"), else: gettext("Generate plan")}
-            </button>
+            <div class="flex flex-wrap items-center gap-2">
+              <.link
+                id="plan-site-link"
+                navigate={~p"/companies/#{@company.id}/site"}
+                class="inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium text-zinc-700 shadow-sm transition hover:border-zinc-300 hover:bg-zinc-50"
+              >
+                <.icon name="hero-globe-alt" class="size-4" />
+                {gettext("Website")}
+              </.link>
+              <button
+                :if={not in_progress?(@latest)}
+                id="plan-regenerate"
+                type="button"
+                phx-click="regenerate"
+                phx-disable-with={gettext("Starting...")}
+                data-confirm={@latest && gettext("Generate a new version? This one will be kept.")}
+                class="inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium text-zinc-700 shadow-sm transition hover:border-zinc-300 hover:bg-zinc-50 active:scale-[0.98]"
+              >
+                <.icon name="hero-arrow-path" class="size-4" />
+                {if @latest, do: gettext("Regenerate"), else: gettext("Generate plan")}
+              </button>
+            </div>
           </div>
         </header>
 
