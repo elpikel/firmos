@@ -28,6 +28,10 @@ defmodule Firmos.Sites do
   `get_published_by_slug/1`. Later edits stay a draft until the owner
   publishes again.
 
+  The owner can undo the latest site change from the activity log
+  (`undoable_entry_id/2`, `undo/3`): the previous version's content comes
+  back as a new `undo` version, live again if the undone change was live.
+
   Every change to a site (generation status, content, slug, publication) is
   broadcast on the company's site topic (see `subscribe/2`) after it commits.
   """
@@ -35,6 +39,7 @@ defmodule Firmos.Sites do
 
   alias Firmos.Accounts.Scope
   alias Firmos.Activity
+  alias Firmos.Activity.Entry
   alias Firmos.AI
   alias Firmos.AI.ErrorCode
   alias Firmos.Companies.Company
@@ -109,18 +114,32 @@ defmodule Firmos.Sites do
   as it is: no version, no entry. The published version is untouched until
   `publish/2`.
 
+  The edit is based on `site`'s `current_version_id` as the caller loaded
+  it (the editor's copy, held server-side since it opened): when the site
+  has moved to another version since (another tab saved, an undo, a new
+  generation), the edit is refused with `:stale` instead of overwriting
+  that change.
+
   Refused while a generation is in progress (`:generation_in_progress`),
   without content (`:no_content`), for another owner's site (`:not_found`),
-  and with the content changeset when the edit is invalid.
+  when stale (`:stale`), and with the content changeset when the edit is
+  invalid.
   """
   @spec update_content(%Scope{}, Site.t(), map()) ::
           {:ok, Site.t()}
-          | {:error, :not_found | :no_content | :generation_in_progress | Ecto.Changeset.t()}
-  def update_content(%Scope{} = scope, %Site{id: site_id}, attrs) when is_map(attrs) do
+          | {:error,
+             :not_found
+             | :no_content
+             | :generation_in_progress
+             | :stale
+             | Ecto.Changeset.t()}
+  def update_content(%Scope{} = scope, %Site{id: site_id, current_version_id: base_id}, attrs)
+      when is_map(attrs) do
     Repo.transact(fn ->
       with {:ok, site} <- lock_site(scope, site_id),
            :ok <- ensure_not_in_progress(site),
            {:ok, current} <- current_version(site),
+           :ok <- ensure_based_on(current, base_id),
            {:ok, content} <-
              current.content
              |> Content.edit_changeset(attrs)
@@ -144,6 +163,144 @@ defmodule Firmos.Sites do
       {:ok, %{updated_site | current_version: version}}
     end
   end
+
+  defp ensure_based_on(%Version{id: base_id}, base_id), do: :ok
+  defp ensure_based_on(%Version{}, _moved), do: {:error, :stale}
+
+  @doc """
+  The company's activity entry the owner can undo right now, or `nil`.
+
+  Only the company's latest site-changing entry (`site_generated`,
+  `site_updated`, `site_published` or `site_undone`) can be undone, and
+  only when it is not itself an undo (no redo), it is about the site's
+  current version, there is a version to go back to, and no generation is
+  in progress. The version to go back to is the one before the entry's
+  version for a generation or an edit, and the version that was published
+  before for a publication (so the first publication can't be undone).
+  `undo/3` re-checks the same rule under the site's lock.
+  """
+  @spec undoable_entry(%Scope{}, Company.t()) :: Entry.t() | nil
+  def undoable_entry(%Scope{} = scope, %Company{} = company) do
+    with %Site{} = site <- get_site(scope, company),
+         {:ok, entry, _target} <- undoable(scope, %{site | company: company}) do
+      entry
+    else
+      _nothing_to_undo -> nil
+    end
+  end
+
+  @doc """
+  Undoes the company's site change recorded by activity entry `entry_id`.
+
+  Under the site's row lock and in one transaction: re-checks that the
+  entry is still the undoable one (see `undoable_entry/2`), inserts
+  version n+1 (source `undo`) with the content of the version to go back
+  to, makes it the current version and, when the undone
+  change was live (the published version was the current one), the
+  published version too; records `site_undone` (subject the new version,
+  metadata `version`, `restored_from_version`, `reverts_entry_id`,
+  `reverts_entry_at`), then broadcasts.
+
+  Refused for a company or entry the scope doesn't own (`:not_found`),
+  while a generation is in progress (`:generation_in_progress`) and when
+  the entry is not (or no longer) undoable (`:not_undoable`: an older
+  change, an undo, or a second click).
+  """
+  @spec undo(%Scope{}, Company.t(), integer()) ::
+          {:ok, Site.t()}
+          | {:error, :not_found | :generation_in_progress | :not_undoable | Ecto.Changeset.t()}
+  def undo(%Scope{} = scope, %Company{id: company_id}, entry_id) when is_integer(entry_id) do
+    Repo.transact(fn ->
+      with {:ok, site} <- lock_company_site(scope, company_id),
+           {:ok, entry} <- Activity.fetch_entry(scope, site.company, entry_id),
+           {:ok, %Entry{id: ^entry_id}, target} <- undoable(scope, site) do
+        store_undo(scope, site, entry, target)
+      else
+        {:ok, _other_entry, _target} -> {:error, :not_undoable}
+        error -> error
+      end
+    end)
+    |> broadcast_ok()
+  end
+
+  @site_changes [:site_generated, :site_updated, :site_published, :site_undone]
+  @undoable_changes [:site_generated, :site_updated, :site_published]
+
+  # The one undo rule, shared by undoable_entry/2 and undo/3. `site` has
+  # its company and current version loaded.
+  defp undoable(scope, %Site{current_version: %Version{id: current_id} = current} = site) do
+    with %Entry{action: action} = entry when action in @undoable_changes <-
+           Activity.latest_for_company(scope, site.company, @site_changes),
+         ^current_id <- Activity.subject_id(entry, "site_version"),
+         :ok <- ensure_not_in_progress(site),
+         %Version{} = target <- undo_target(scope, site, current, entry) do
+      {:ok, entry, target}
+    else
+      {:error, :generation_in_progress} = error -> error
+      _nothing_to_undo -> {:error, :not_undoable}
+    end
+  end
+
+  defp undoable(_scope, %Site{}), do: {:error, :not_undoable}
+
+  # Undoing a publication puts back what was published before it (never a
+  # draft that was rejected in between); the first publication has nothing
+  # to go back to.
+  defp undo_target(scope, site, _current, %Entry{action: :site_published} = entry) do
+    case previously_published_id(scope, site, entry) do
+      nil -> nil
+      version_id -> Repo.get_by(Version, id: version_id, site_id: site.id)
+    end
+  end
+
+  # Every generation, edit and undo moves the current version from the one
+  # numbered just before it.
+  defp undo_target(_scope, site, current, _change_entry) do
+    from(v in Version, as: :version)
+    |> where([version: v], v.site_id == ^site.id and v.number < ^current.number)
+    |> order_by([version: v], desc: v.number)
+    |> limit(1)
+    |> Repo.one()
+  end
+
+  defp previously_published_id(_scope, _site, %Entry{
+         metadata: %{"previous_published_version_id" => version_id}
+       }),
+       do: version_id
+
+  # Entries recorded before the metadata existed: the previous publication.
+  defp previously_published_id(scope, site, entry) do
+    case Activity.latest_for_company(scope, site.company, [:site_published],
+           before: Activity.cursor(entry)
+         ) do
+      nil -> nil
+      previous -> Activity.subject_id(previous, "site_version")
+    end
+  end
+
+  defp store_undo(scope, site, entry, target) do
+    live? = site.published_version_id == site.current_version_id
+
+    with {:ok, {updated_site, version}} <- insert_version(site, target.content, :undo),
+         {:ok, updated_site} <- republish_if(live?, updated_site),
+         {:ok, _entry} <-
+           Activity.record(site.company, scope, :site_undone,
+             subject: {"site_version", version.id},
+             metadata: %{
+               "version" => version.number,
+               "restored_from_version" => target.number,
+               "reverts_entry_id" => entry.id,
+               "reverts_entry_at" => DateTime.to_iso8601(entry.inserted_at)
+             }
+           ) do
+      {:ok, %{updated_site | current_version: version}}
+    end
+  end
+
+  # Undoing a live change makes the restored content live; undoing a
+  # draft-only edit must not publish the older draft.
+  defp republish_if(true, site), do: site |> Site.publish_changeset() |> Repo.update()
+  defp republish_if(false, site), do: {:ok, site}
 
   @doc "A changeset of the site's slug for the slug form."
   @spec change_slug(Site.t(), map()) :: Ecto.Changeset.t()
@@ -171,7 +328,9 @@ defmodule Firmos.Sites do
 
   Under the site's row lock and in one transaction: the current version
   becomes the published one, the site `published`, and `site_published` is
-  recorded (subject the version, metadata the slug and version number).
+  recorded (subject the version, metadata the slug, the version number and
+  the `previous_published_version_id`, `nil` on the first publication, which
+  `undo/3` puts back live).
   Publishing the version that is already published changes nothing.
 
   Refused without a current version (`:no_content`), without a slug
@@ -200,7 +359,11 @@ defmodule Firmos.Sites do
          {:ok, _entry} <-
            Activity.record(site.company, scope, :site_published,
              subject: {"site_version", version.id},
-             metadata: %{"slug" => published.slug, "version" => version.number}
+             metadata: %{
+               "slug" => published.slug,
+               "version" => version.number,
+               "previous_published_version_id" => site.published_version_id
+             }
            ) do
       {:ok, published}
     end
@@ -506,12 +669,18 @@ defmodule Firmos.Sites do
   end
 
   # The owner's site, locked, with its company and current version.
-  defp lock_site(%Scope{user: %{id: user_id}}, site_id) do
+  defp lock_site(scope, site_id),
+    do: lock_owned_site(scope, dynamic([site: s], s.id == ^site_id))
+
+  defp lock_company_site(scope, company_id),
+    do: lock_owned_site(scope, dynamic([site: s], s.company_id == ^company_id))
+
+  defp lock_owned_site(%Scope{user: %{id: user_id}}, condition) do
     owned_company_ids =
       from(c in Company, as: :company, where: c.user_id == ^user_id, select: c.id)
 
     from(s in Site, as: :site, lock: "FOR UPDATE")
-    |> where([site: s], s.id == ^site_id)
+    |> where(^condition)
     |> where([site: s], s.company_id in subquery(owned_company_ids))
     |> Repo.one()
     |> case do

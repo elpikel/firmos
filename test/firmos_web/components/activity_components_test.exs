@@ -31,6 +31,33 @@ defmodule FirmosWeb.ActivityComponentsTest do
     end
   end
 
+  test "an undo links to the change it reverted" do
+    entry = %Entry{
+      id: 7,
+      actor: :owner,
+      action: :site_undone,
+      inserted_at: ~U[2026-11-01 10:05:00Z],
+      metadata: %{
+        "version" => 3,
+        "restored_from_version" => 1,
+        "reverts_entry_id" => 5,
+        "reverts_entry_at" => "2026-11-01T10:00:00Z"
+      }
+    }
+
+    document =
+      (&ActivityComponents.activity_entry/1)
+      |> render_component(id: "activities-7", entry: entry)
+      |> LazyHTML.from_fragment()
+
+    assert document
+           |> LazyHTML.query(~s(#activities-7-reverts[href="#activities-5"]))
+           |> Enum.any?()
+
+    assert document |> LazyHTML.query("[data-role=summary]") |> LazyHTML.text() =~
+             "01.11.2026, 10:00"
+  end
+
   test "an action without a label shows as stored" do
     assert ActivityComponents.action_label(:not_an_action) == "not_an_action"
   end

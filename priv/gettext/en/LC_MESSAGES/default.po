@@ -23,7 +23,7 @@ msgid "Attempting to reconnect"
 msgstr ""
 
 #: lib/firmos_web/components/layouts/root.html.heex:47
-#: lib/firmos_web/live/company_live/activity.ex:60
+#: lib/firmos_web/live/company_live/activity.ex:127
 #: lib/firmos_web/live/company_live/plan.ex:144
 #: lib/firmos_web/live/company_live/profile.ex:60
 #: lib/firmos_web/live/company_live/site.ex:155
@@ -265,7 +265,7 @@ msgstr ""
 
 #: lib/firmos_web/live/company_live/profile.ex:100
 #: lib/firmos_web/live/company_live/site.ex:372
-#: lib/firmos_web/live/company_live/site_edit.ex:191
+#: lib/firmos_web/live/company_live/site_edit.ex:242
 #: lib/firmos_web/live/home_live.ex:64
 #: lib/firmos_web/live/user_live/settings.ex:66
 #, elixir-autogen, elixir-format
@@ -368,13 +368,13 @@ msgstr ""
 msgid "Your idea has been saved."
 msgstr ""
 
-#: lib/firmos_web/components/activity_components.ex:168
+#: lib/firmos_web/components/activity_components.ex:216
 #: lib/firmos_web/live/company_live/profile.ex:88
 #, elixir-autogen, elixir-format
 msgid "City"
 msgstr ""
 
-#: lib/firmos_web/components/activity_components.ex:166
+#: lib/firmos_web/components/activity_components.ex:214
 #: lib/firmos_web/live/company_live/profile.ex:86
 #, elixir-autogen, elixir-format
 msgid "Company name"
@@ -391,7 +391,7 @@ msgstr ""
 msgid "Company profile saved."
 msgstr ""
 
-#: lib/firmos_web/components/activity_components.ex:169
+#: lib/firmos_web/components/activity_components.ex:217
 #: lib/firmos_web/live/company_live/profile.ex:92
 #, elixir-autogen, elixir-format
 msgid "Contact email"
@@ -402,7 +402,7 @@ msgstr ""
 msgid "Edit profile"
 msgstr ""
 
-#: lib/firmos_web/components/activity_components.ex:167
+#: lib/firmos_web/components/activity_components.ex:215
 #: lib/firmos_web/live/company_live/profile.ex:87
 #, elixir-autogen, elixir-format
 msgid "Industry"
@@ -414,7 +414,7 @@ msgid "My company"
 msgstr ""
 
 #: lib/firmos_web/live/company_live/profile.ex:102
-#: lib/firmos_web/live/company_live/site_edit.ex:195
+#: lib/firmos_web/live/company_live/site_edit.ex:246
 #, elixir-autogen, elixir-format
 msgid "Save"
 msgstr ""
@@ -429,81 +429,81 @@ msgstr ""
 msgid "Your company"
 msgstr ""
 
-#: lib/firmos_web/components/activity_components.ex:179
+#: lib/firmos_web/components/activity_components.ex:236
 #, elixir-autogen, elixir-format
 msgid "%{time} UTC"
 msgstr ""
 
-#: lib/firmos_web/components/activity_components.ex:172
-#: lib/firmos_web/components/activity_components.ex:173
+#: lib/firmos_web/components/activity_components.ex:220
+#: lib/firmos_web/components/activity_components.ex:221
 #, elixir-autogen, elixir-format
 msgid "(empty)"
 msgstr ""
 
-#: lib/firmos_web/components/activity_components.ex:158
+#: lib/firmos_web/components/activity_components.ex:206
 #, elixir-autogen, elixir-format
 msgid "AI agent"
 msgstr ""
 
-#: lib/firmos_web/live/company_live/activity.ex:23
-#: lib/firmos_web/live/company_live/activity.ex:63
+#: lib/firmos_web/live/company_live/activity.ex:32
+#: lib/firmos_web/live/company_live/activity.ex:130
 #: lib/firmos_web/live/company_live/profile.ex:68
 #: lib/firmos_web/live/dashboard_live.ex:151
 #, elixir-autogen, elixir-format
 msgid "Activity"
 msgstr ""
 
-#: lib/firmos_web/components/activity_components.ex:145
+#: lib/firmos_web/components/activity_components.ex:193
 #, elixir-autogen, elixir-format
 msgid "Company created"
 msgstr ""
 
-#: lib/firmos_web/components/activity_components.ex:60
+#: lib/firmos_web/components/activity_components.ex:68
 #, elixir-autogen, elixir-format
 msgid "Created the company “%{name}”."
 msgstr ""
 
-#: lib/firmos_web/components/activity_components.ex:110
+#: lib/firmos_web/components/activity_components.ex:158
 #, elixir-autogen, elixir-format
 msgid "Created the company."
 msgstr ""
 
-#: lib/firmos_web/live/company_live/activity.ex:66
+#: lib/firmos_web/live/company_live/activity.ex:133
 #, elixir-autogen, elixir-format
 msgid "Everything done in %{company}, by you or by AI, newest first."
 msgstr ""
 
-#: lib/firmos_web/live/company_live/activity.ex:81
+#: lib/firmos_web/live/company_live/activity.ex:148
 #, elixir-autogen, elixir-format
 msgid "No activity yet. Changes to your company will show up here."
 msgstr ""
 
-#: lib/firmos_web/components/activity_components.ex:157
+#: lib/firmos_web/components/activity_components.ex:205
 #, elixir-autogen, elixir-format
 msgid "Owner"
 msgstr ""
 
-#: lib/firmos_web/components/activity_components.ex:146
+#: lib/firmos_web/components/activity_components.ex:194
 #, elixir-autogen, elixir-format
 msgid "Profile updated"
 msgstr ""
 
-#: lib/firmos_web/components/activity_components.ex:159
+#: lib/firmos_web/components/activity_components.ex:207
 #, elixir-autogen, elixir-format
 msgid "System"
 msgstr ""
 
-#: lib/firmos_web/components/activity_components.ex:111
+#: lib/firmos_web/components/activity_components.ex:159
 #, elixir-autogen, elixir-format
 msgid "Updated the company profile."
 msgstr ""
 
-#: lib/firmos_web/live/company_live/activity.ex:94
+#: lib/firmos_web/live/company_live/activity.ex:175
 #, elixir-autogen, elixir-format
 msgid "Load more"
 msgstr ""
 
-#: lib/firmos_web/live/company_live/activity.ex:92
+#: lib/firmos_web/live/company_live/activity.ex:173
 #, elixir-autogen, elixir-format
 msgid "Loading..."
 msgstr ""
@@ -560,12 +560,12 @@ msgstr ""
 msgid "Generate plan"
 msgstr ""
 
-#: lib/firmos_web/components/activity_components.ex:112
+#: lib/firmos_web/components/activity_components.ex:160
 #, elixir-autogen, elixir-format
 msgid "Generated the business plan."
 msgstr ""
 
-#: lib/firmos_web/components/activity_components.ex:123
+#: lib/firmos_web/components/activity_components.ex:171
 #, elixir-autogen, elixir-format
 msgid "Generated version %{version} of the business plan."
 msgstr ""
@@ -575,7 +575,7 @@ msgstr ""
 msgid "Is this plan useful?"
 msgstr ""
 
-#: lib/firmos_web/components/activity_components.ex:148
+#: lib/firmos_web/components/activity_components.ex:196
 #, elixir-autogen, elixir-format
 msgid "New plan requested"
 msgstr ""
@@ -591,12 +591,12 @@ msgid "Not useful"
 msgstr ""
 
 #: lib/firmos_web/live/company_live/plan.ex:230
-#: lib/firmos_web/live/company_live/site_edit.ex:136
+#: lib/firmos_web/live/company_live/site_edit.ex:187
 #, elixir-autogen, elixir-format
 msgid "Offer"
 msgstr ""
 
-#: lib/firmos_web/components/activity_components.ex:147
+#: lib/firmos_web/components/activity_components.ex:195
 #, elixir-autogen, elixir-format
 msgid "Plan generated"
 msgstr ""
@@ -607,7 +607,7 @@ msgid "Preparing your business plan..."
 msgstr ""
 
 #: lib/firmos_web/live/company_live/plan.ex:248
-#: lib/firmos_web/live/company_live/site_edit.ex:149
+#: lib/firmos_web/live/company_live/site_edit.ex:200
 #, elixir-autogen, elixir-format
 msgid "Pricing"
 msgstr ""
@@ -617,12 +617,12 @@ msgstr ""
 msgid "Regenerate"
 msgstr ""
 
-#: lib/firmos_web/components/activity_components.ex:113
+#: lib/firmos_web/components/activity_components.ex:161
 #, elixir-autogen, elixir-format
 msgid "Requested a new business plan."
 msgstr ""
 
-#: lib/firmos_web/components/activity_components.ex:126
+#: lib/firmos_web/components/activity_components.ex:174
 #, elixir-autogen, elixir-format
 msgid "Requested version %{version} of the business plan."
 msgstr ""
@@ -747,7 +747,7 @@ msgstr ""
 msgid "Draft preview. This is how customers will see your website."
 msgstr ""
 
-#: lib/firmos_web/components/activity_components.ex:115
+#: lib/firmos_web/components/activity_components.ex:163
 #, elixir-autogen, elixir-format
 msgid "Edited the website."
 msgstr ""
@@ -762,12 +762,12 @@ msgstr ""
 msgid "Generate your business plan first."
 msgstr ""
 
-#: lib/firmos_web/components/activity_components.ex:114
+#: lib/firmos_web/components/activity_components.ex:162
 #, elixir-autogen, elixir-format
 msgid "Generated the website draft."
 msgstr ""
 
-#: lib/firmos_web/components/activity_components.ex:129
+#: lib/firmos_web/components/activity_components.ex:177
 #, elixir-autogen, elixir-format
 msgid "Generated version %{version} of the website."
 msgstr ""
@@ -797,12 +797,12 @@ msgstr ""
 msgid "Preview: %{name}"
 msgstr ""
 
-#: lib/firmos_web/components/activity_components.ex:116
+#: lib/firmos_web/components/activity_components.ex:164
 #, elixir-autogen, elixir-format
 msgid "Published the website."
 msgstr ""
 
-#: lib/firmos_web/components/activity_components.ex:135
+#: lib/firmos_web/components/activity_components.ex:183
 #, elixir-autogen, elixir-format
 msgid "Published version %{version} of the website."
 msgstr ""
@@ -812,12 +812,12 @@ msgstr ""
 msgid "Regenerate website"
 msgstr ""
 
-#: lib/firmos_web/components/activity_components.ex:138
+#: lib/firmos_web/components/activity_components.ex:186
 #, elixir-autogen, elixir-format
 msgid "Restored the website as version %{version}."
 msgstr ""
 
-#: lib/firmos_web/components/activity_components.ex:132
+#: lib/firmos_web/components/activity_components.ex:180
 #, elixir-autogen, elixir-format
 msgid "Saved version %{version} of the website."
 msgstr ""
@@ -832,7 +832,7 @@ msgstr ""
 msgid "There is no website draft to preview yet."
 msgstr ""
 
-#: lib/firmos_web/components/activity_components.ex:117
+#: lib/firmos_web/components/activity_components.ex:165
 #, elixir-autogen, elixir-format
 msgid "Undid a website change."
 msgstr ""
@@ -845,28 +845,28 @@ msgstr ""
 #: lib/firmos_web/live/company_live/plan.ex:165
 #: lib/firmos_web/live/company_live/site.ex:34
 #: lib/firmos_web/live/company_live/site.ex:160
-#: lib/firmos_web/live/company_live/site_edit.ex:94
+#: lib/firmos_web/live/company_live/site_edit.ex:128
 #: lib/firmos_web/live/dashboard_live.ex:143
 #, elixir-autogen, elixir-format
 msgid "Website"
 msgstr ""
 
-#: lib/firmos_web/components/activity_components.ex:152
+#: lib/firmos_web/components/activity_components.ex:200
 #, elixir-autogen, elixir-format
 msgid "Website change undone"
 msgstr ""
 
-#: lib/firmos_web/components/activity_components.ex:150
+#: lib/firmos_web/components/activity_components.ex:198
 #, elixir-autogen, elixir-format
 msgid "Website edited"
 msgstr ""
 
-#: lib/firmos_web/components/activity_components.ex:149
+#: lib/firmos_web/components/activity_components.ex:197
 #, elixir-autogen, elixir-format
 msgid "Website generated"
 msgstr ""
 
-#: lib/firmos_web/components/activity_components.ex:151
+#: lib/firmos_web/components/activity_components.ex:199
 #, elixir-autogen, elixir-format
 msgid "Website published"
 msgstr ""
@@ -882,27 +882,28 @@ msgid "Your website is written from your business plan. Generate the plan first.
 msgstr ""
 
 #: lib/firmos_web/live/company_live/site.ex:165
-#: lib/firmos_web/live/company_live/site_edit.ex:101
+#: lib/firmos_web/live/company_live/site_edit.ex:135
 #, elixir-autogen, elixir-format
 msgid "draft version %{version}"
 msgstr ""
 
-#: lib/firmos_web/live/company_live/site_edit.ex:71
+#: lib/firmos_web/live/company_live/activity.ex:86
+#: lib/firmos_web/live/company_live/site_edit.ex:86
 #, elixir-autogen, elixir-format
 msgid "A new website is being generated. Try again when it's ready."
 msgstr ""
 
-#: lib/firmos_web/live/company_live/site_edit.ex:115
+#: lib/firmos_web/live/company_live/site_edit.ex:149
 #, elixir-autogen, elixir-format
 msgid "A new website is being generated. You can save once it's ready."
 msgstr ""
 
-#: lib/firmos_web/live/company_live/site_edit.ex:130
+#: lib/firmos_web/live/company_live/site_edit.ex:181
 #, elixir-autogen, elixir-format
 msgid "Button label"
 msgstr ""
 
-#: lib/firmos_web/live/company_live/site_edit.ex:185
+#: lib/firmos_web/live/company_live/site_edit.ex:236
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Cancel"
 msgstr ""
@@ -912,7 +913,7 @@ msgstr ""
 msgid "Choose your website's address before publishing."
 msgstr ""
 
-#: lib/firmos_web/live/company_live/site_edit.ex:163
+#: lib/firmos_web/live/company_live/site_edit.ex:214
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Contact"
 msgstr ""
@@ -927,12 +928,12 @@ msgstr ""
 msgid "Could not save the address."
 msgstr ""
 
-#: lib/firmos_web/live/company_live/site_edit.ex:75
+#: lib/firmos_web/live/company_live/site_edit.ex:90
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Could not save your website."
 msgstr ""
 
-#: lib/firmos_web/live/company_live/site_edit.ex:141
+#: lib/firmos_web/live/company_live/site_edit.ex:192
 #, elixir-autogen, elixir-format
 msgid "Description"
 msgstr ""
@@ -942,23 +943,23 @@ msgstr ""
 msgid "Edit"
 msgstr ""
 
-#: lib/firmos_web/live/company_live/site_edit.ex:173
+#: lib/firmos_web/live/company_live/site_edit.ex:224
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Edit the profile"
 msgstr ""
 
-#: lib/firmos_web/live/company_live/site_edit.ex:28
-#: lib/firmos_web/live/company_live/site_edit.ex:98
+#: lib/firmos_web/live/company_live/site_edit.ex:36
+#: lib/firmos_web/live/company_live/site_edit.ex:132
 #, elixir-autogen, elixir-format
 msgid "Edit website"
 msgstr ""
 
-#: lib/firmos_web/live/company_live/site_edit.ex:128
+#: lib/firmos_web/live/company_live/site_edit.ex:179
 #, elixir-autogen, elixir-format
 msgid "Headline"
 msgstr ""
 
-#: lib/firmos_web/live/company_live/site_edit.ex:127
+#: lib/firmos_web/live/company_live/site_edit.ex:178
 #, elixir-autogen, elixir-format
 msgid "Hero"
 msgstr ""
@@ -968,8 +969,8 @@ msgstr ""
 msgid "Lowercase letters, digits and hyphens. Changing the address of a published website moves it: the old address stops working."
 msgstr ""
 
-#: lib/firmos_web/live/company_live/site_edit.ex:140
-#: lib/firmos_web/live/company_live/site_edit.ex:153
+#: lib/firmos_web/live/company_live/site_edit.ex:191
+#: lib/firmos_web/live/company_live/site_edit.ex:204
 #, elixir-autogen, elixir-format
 msgid "Name"
 msgstr ""
@@ -979,7 +980,7 @@ msgstr ""
 msgid "Not published yet. Only you can see the draft."
 msgstr ""
 
-#: lib/firmos_web/live/company_live/site_edit.ex:155
+#: lib/firmos_web/live/company_live/site_edit.ex:206
 #, elixir-autogen, elixir-format
 msgid "Note"
 msgstr ""
@@ -989,7 +990,7 @@ msgstr ""
 msgid "Page not found"
 msgstr ""
 
-#: lib/firmos_web/live/company_live/site_edit.ex:154
+#: lib/firmos_web/live/company_live/site_edit.ex:205
 #, elixir-autogen, elixir-format
 msgid "Price"
 msgstr ""
@@ -1024,19 +1025,19 @@ msgstr ""
 msgid "Save address"
 msgstr ""
 
-#: lib/firmos_web/live/company_live/site_edit.ex:137
-#: lib/firmos_web/live/company_live/site_edit.ex:150
-#: lib/firmos_web/live/company_live/site_edit.ex:164
+#: lib/firmos_web/live/company_live/site_edit.ex:188
+#: lib/firmos_web/live/company_live/site_edit.ex:201
+#: lib/firmos_web/live/company_live/site_edit.ex:215
 #, elixir-autogen, elixir-format
 msgid "Section title"
 msgstr ""
 
-#: lib/firmos_web/live/company_live/site_edit.ex:129
+#: lib/firmos_web/live/company_live/site_edit.ex:180
 #, elixir-autogen, elixir-format
 msgid "Subheadline"
 msgstr ""
 
-#: lib/firmos_web/live/company_live/site_edit.ex:165
+#: lib/firmos_web/live/company_live/site_edit.ex:216
 #, elixir-autogen, elixir-format
 msgid "Text"
 msgstr ""
@@ -1051,12 +1052,12 @@ msgstr ""
 msgid "The draft has changes customers don't see yet."
 msgstr ""
 
-#: lib/firmos_web/live/company_live/site_edit.ex:167
+#: lib/firmos_web/live/company_live/site_edit.ex:218
 #, elixir-autogen, elixir-format
 msgid "The email and city come from your company profile."
 msgstr ""
 
-#: lib/firmos_web/live/company_live/site_edit.ex:37
+#: lib/firmos_web/live/company_live/site_edit.ex:46
 #, elixir-autogen, elixir-format, fuzzy
 msgid "There is no website draft to edit yet."
 msgstr ""
@@ -1081,7 +1082,7 @@ msgstr ""
 msgid "Website address saved."
 msgstr ""
 
-#: lib/firmos_web/live/company_live/site_edit.ex:60
+#: lib/firmos_web/live/company_live/site_edit.ex:69
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Website saved."
 msgstr ""
@@ -1089,4 +1090,54 @@ msgstr ""
 #: lib/firmos_web/live/company_live/site.ex:93
 #, elixir-autogen, elixir-format
 msgid "Your website is published."
+msgstr ""
+
+#: lib/firmos_web/components/activity_components.ex:232
+#, elixir-autogen, elixir-format
+msgid "(unknown)"
+msgstr ""
+
+#: lib/firmos_web/live/company_live/activity.ex:72
+#, elixir-autogen, elixir-format
+msgid "Change undone. The previous version is back."
+msgstr ""
+
+#: lib/firmos_web/live/company_live/activity.ex:91
+#, elixir-autogen, elixir-format
+msgid "Could not undo the change."
+msgstr ""
+
+#: lib/firmos_web/live/company_live/activity.ex:78
+#, elixir-autogen, elixir-format
+msgid "Nothing to undo: the website has changed in the meantime."
+msgstr ""
+
+#: lib/firmos_web/live/company_live/site_edit.ex:165
+#, elixir-autogen, elixir-format
+msgid "Reload"
+msgstr ""
+
+#: lib/firmos_web/components/activity_components.ex:136
+#, elixir-autogen, elixir-format
+msgid "Show the undone change"
+msgstr ""
+
+#: lib/firmos_web/live/company_live/site_edit.ex:114
+#, elixir-autogen, elixir-format
+msgid "The website changed in the meantime. Reload to edit the latest version."
+msgstr ""
+
+#: lib/firmos_web/components/activity_components.ex:120
+#, elixir-autogen, elixir-format
+msgid "Undid the change from %{time}: the content of version %{restored} is back as version %{version}."
+msgstr ""
+
+#: lib/firmos_web/live/company_live/activity.ex:162
+#, elixir-autogen, elixir-format
+msgid "Undo"
+msgstr ""
+
+#: lib/firmos_web/live/company_live/activity.ex:158
+#, elixir-autogen, elixir-format
+msgid "Undoing..."
 msgstr ""
