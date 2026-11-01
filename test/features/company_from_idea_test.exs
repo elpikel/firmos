@@ -46,8 +46,6 @@ defmodule FirmosWeb.Features.CompanyFromIdeaTest do
   # ---------------------------------------------------------------------
 
   describe "Scenario: AC1 — a visitor who signed up with an idea lands on the dashboard" do
-    @describetag :skip
-
     setup %{conn: conn} do
       %{conn: conn, scope: scope} = sign_up_with_idea(conn)
       {:ok, dashboard, _html} = live(conn, ~p"/dashboard")
@@ -73,8 +71,6 @@ defmodule FirmosWeb.Features.CompanyFromIdeaTest do
   end
 
   describe "Scenario: AC1 — the owner opens the dashboard again in another tab" do
-    @describetag :skip
-
     setup %{conn: conn} do
       %{conn: conn, scope: scope} = sign_up_with_idea(conn)
       {:ok, _first_tab, _html} = live(conn, ~p"/dashboard")
@@ -89,8 +85,6 @@ defmodule FirmosWeb.Features.CompanyFromIdeaTest do
   end
 
   describe "Scenario: AC2 — the owner opens the new company's profile from the dashboard" do
-    @describetag :skip
-
     setup :register_and_log_in_user
 
     setup %{conn: conn, scope: scope} do
@@ -124,8 +118,6 @@ defmodule FirmosWeb.Features.CompanyFromIdeaTest do
   end
 
   describe "Scenario: AC2 — the owner edits and saves the profile" do
-    @describetag :skip
-
     setup :register_and_log_in_user
 
     setup %{conn: conn, scope: scope} do
@@ -168,8 +160,6 @@ defmodule FirmosWeb.Features.CompanyFromIdeaTest do
   # ---------------------------------------------------------------------
 
   describe "Scenario: AC3 — rejecting a profile with the name cleared" do
-    @describetag :skip
-
     setup :register_and_log_in_user
 
     setup %{conn: conn, scope: scope} do
@@ -193,8 +183,6 @@ defmodule FirmosWeb.Features.CompanyFromIdeaTest do
   end
 
   describe "Scenario: rejecting another owner's company profile" do
-    @describetag :skip
-
     setup :register_and_log_in_user
 
     setup do

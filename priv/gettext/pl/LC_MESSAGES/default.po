@@ -23,8 +23,9 @@ msgid "Attempting to reconnect"
 msgstr "Próba ponownego połączenia"
 
 #: lib/firmos_web/components/layouts/root.html.heex:47
-#: lib/firmos_web/live/dashboard_live.ex:10
+#: lib/firmos_web/live/company_live/profile.ex:59
 #: lib/firmos_web/live/dashboard_live.ex:19
+#: lib/firmos_web/live/dashboard_live.ex:48
 #, elixir-autogen, elixir-format
 msgid "Dashboard"
 msgstr "Panel"
@@ -32,7 +33,7 @@ msgstr "Panel"
 #: lib/firmos_web/components/layouts/root.html.heex:81
 #: lib/firmos_web/live/user_live/confirmation.ex:53
 #: lib/firmos_web/live/user_live/login.ex:13
-#: lib/firmos_web/live/user_live/registration.ex:20
+#: lib/firmos_web/live/user_live/registration.ex:21
 #, elixir-autogen, elixir-format
 msgid "Log in"
 msgstr "Zaloguj się"
@@ -42,7 +43,7 @@ msgstr "Zaloguj się"
 msgid "Log out"
 msgstr "Wyloguj się"
 
-#: lib/firmos_web/live/dashboard_live.ex:32
+#: lib/firmos_web/live/dashboard_live.ex:94
 #, elixir-autogen, elixir-format
 msgid "Nothing here yet"
 msgstr "Na razie nic tu nie ma"
@@ -67,13 +68,13 @@ msgstr "Coś poszło nie tak!"
 msgid "We can't find the internet"
 msgstr "Brak połączenia z internetem"
 
-#: lib/firmos_web/live/dashboard_live.ex:21
+#: lib/firmos_web/live/dashboard_live.ex:50
 #: lib/firmos_web/live/user_live/confirmation.ex:12
 #, elixir-autogen, elixir-format
 msgid "Welcome, %{email}"
 msgstr "Witaj, %{email}"
 
-#: lib/firmos_web/live/dashboard_live.ex:34
+#: lib/firmos_web/live/dashboard_live.ex:96
 #, elixir-autogen, elixir-format
 msgid "Your firm's activity will show up here once you start using Firmos."
 msgstr "Tu pojawi się aktywność Twojej firmy, gdy zaczniesz korzystać z Firmos."
@@ -93,7 +94,7 @@ msgstr "Link potwierdzający zmianę adresu e-mail został wysłany na nowy adre
 msgid "Account Settings"
 msgstr "Ustawienia konta"
 
-#: lib/firmos_web/live/user_live/registration.ex:18
+#: lib/firmos_web/live/user_live/registration.ex:19
 #, elixir-autogen, elixir-format
 msgid "Already registered?"
 msgstr "Masz już konto?"
@@ -249,7 +250,7 @@ msgstr "Hasło"
 msgid "Password updated successfully!"
 msgstr "Hasło zostało zmienione!"
 
-#: lib/firmos_web/live/user_live/registration.ex:16
+#: lib/firmos_web/live/user_live/registration.ex:17
 #, elixir-autogen, elixir-format
 msgid "Register for an account"
 msgstr "Utwórz konto"
@@ -259,6 +260,7 @@ msgstr "Utwórz konto"
 msgid "Save Password"
 msgstr "Zapisz hasło"
 
+#: lib/firmos_web/live/company_live/profile.ex:90
 #: lib/firmos_web/live/home_live.ex:64
 #: lib/firmos_web/live/user_live/settings.ex:66
 #, elixir-autogen, elixir-format
@@ -336,7 +338,7 @@ msgstr "stronie skrzynki pocztowej"
 msgid "A few sentences are enough: what you sell, to whom and where."
 msgstr "Wystarczy kilka zdań: co sprzedajesz, komu i gdzie."
 
-#: lib/firmos_web/live/user_live/registration.ex:39
+#: lib/firmos_web/live/user_live/registration.ex:40
 #, elixir-autogen, elixir-format
 msgid "Create an account and we will start working on it."
 msgstr "Załóż konto, a zajmiemy się resztą."
@@ -351,7 +353,7 @@ msgstr "Opisz swój pomysł na biznes"
 msgid "For example: an artisan bakery in Kraków that delivers fresh bread to offices every morning."
 msgstr "Na przykład: rzemieślnicza piekarnia w Krakowie, która co rano dostarcza świeże pieczywo do biur."
 
-#: lib/firmos_web/live/user_live/registration.ex:33
+#: lib/firmos_web/live/user_live/registration.ex:34
 #, elixir-autogen, elixir-format
 msgid "Your idea"
 msgstr "Twój pomysł"
@@ -360,3 +362,59 @@ msgstr "Twój pomysł"
 #, elixir-autogen, elixir-format
 msgid "Your idea has been saved."
 msgstr "Twój pomysł został zapisany."
+
+#: lib/firmos_web/live/company_live/profile.ex:78
+#, elixir-autogen, elixir-format
+msgid "City"
+msgstr "Miasto"
+
+#: lib/firmos_web/live/company_live/profile.ex:76
+#, elixir-autogen, elixir-format
+msgid "Company name"
+msgstr "Nazwa firmy"
+
+#: lib/firmos_web/live/company_live/profile.ex:17
+#: lib/firmos_web/live/company_live/profile.ex:62
+#, elixir-autogen, elixir-format
+msgid "Company profile"
+msgstr "Profil firmy"
+
+#: lib/firmos_web/live/company_live/profile.ex:36
+#, elixir-autogen, elixir-format
+msgid "Company profile saved."
+msgstr "Profil firmy został zapisany."
+
+#: lib/firmos_web/live/company_live/profile.ex:82
+#, elixir-autogen, elixir-format
+msgid "Contact email"
+msgstr "E-mail kontaktowy"
+
+#: lib/firmos_web/live/dashboard_live.ex:74
+#, elixir-autogen, elixir-format
+msgid "Edit profile"
+msgstr "Edytuj profil"
+
+#: lib/firmos_web/live/company_live/profile.ex:77
+#, elixir-autogen, elixir-format
+msgid "Industry"
+msgstr "Branża"
+
+#: lib/firmos_web/live/dashboard_live.ex:27
+#, elixir-autogen, elixir-format
+msgid "My company"
+msgstr "Moja firma"
+
+#: lib/firmos_web/live/company_live/profile.ex:92
+#, elixir-autogen, elixir-format
+msgid "Save"
+msgstr "Zapisz"
+
+#: lib/firmos_web/live/company_live/profile.ex:65
+#, elixir-autogen, elixir-format
+msgid "The basics customers will see about your company."
+msgstr "Podstawowe informacje, które klienci zobaczą o Twojej firmie."
+
+#: lib/firmos_web/live/dashboard_live.ex:62
+#, elixir-autogen, elixir-format
+msgid "Your company"
+msgstr "Twoja firma"

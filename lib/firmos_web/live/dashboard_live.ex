@@ -5,9 +5,38 @@ defmodule FirmosWeb.DashboardLive do
   """
   use FirmosWeb, :live_view
 
+  alias Firmos.Companies
+
+  require Logger
+
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, assign(socket, :page_title, gettext("Dashboard"))}
+    scope = socket.assigns.current_scope
+    ensure_company_from_idea(scope)
+
+    {:ok,
+     socket
+     |> assign(:page_title, gettext("Dashboard"))
+     |> assign(:company, Companies.latest_company(scope))}
+  end
+
+  # Runs on both the dead and the connected mount; the context makes it
+  # idempotent, so each idea becomes exactly one company. A failure must not
+  # lock the owner out of the dashboard, so it is logged and the page renders.
+  defp ensure_company_from_idea(scope) do
+    case Companies.ensure_company_from_idea(scope, gettext("My company")) do
+      {:ok, _companies} ->
+        :ok
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        # Field names only: the values are the owner's idea text.
+        invalid_fields = changeset.errors |> Keyword.keys() |> Enum.uniq()
+
+        Logger.error(
+          "Could not create company from idea for user_id=#{scope.user.id}, " <>
+            "invalid fields: #{inspect(invalid_fields)}"
+        )
+    end
   end
 
   @impl true
@@ -22,7 +51,40 @@ defmodule FirmosWeb.DashboardLive do
           </h1>
         </header>
 
+        <article
+          :if={@company}
+          id="current-company"
+          class="group space-y-4 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm transition hover:border-zinc-300 hover:shadow-md"
+        >
+          <div class="flex items-start justify-between gap-4">
+            <div class="space-y-1">
+              <p class="text-xs font-medium uppercase tracking-wide text-zinc-500">
+                {gettext("Your company")}
+              </p>
+              <h2 id="current-company-name" class="text-lg font-semibold text-zinc-900">
+                {@company.name}
+              </h2>
+            </div>
+            <.link
+              id="company-profile-link"
+              navigate={~p"/companies/#{@company.id}/profile"}
+              class="inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 px-3 py-1.5 text-sm font-medium text-zinc-700 transition hover:border-zinc-300 hover:bg-zinc-50"
+            >
+              <.icon name="hero-pencil-square" class="size-4" />
+              {gettext("Edit profile")}
+            </.link>
+          </div>
+          <p
+            :if={@company.description}
+            id="current-company-description"
+            class="whitespace-pre-line text-sm leading-relaxed text-zinc-600"
+          >
+            {@company.description}
+          </p>
+        </article>
+
         <div
+          :if={is_nil(@company)}
           id="dashboard-empty"
           class="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-zinc-300 px-6 py-16 text-center transition-colors hover:border-zinc-400"
         >

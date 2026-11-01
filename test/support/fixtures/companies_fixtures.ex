@@ -12,7 +12,7 @@ defmodule Firmos.CompaniesFixtures do
   @doc "Creates an idea for the scope's owner and turns it into a company."
   def company_fixture(%Scope{} = scope, idea_text \\ valid_idea_text()) do
     {:ok, _idea} = Ideas.create_for_user(scope, %{text: idea_text})
-    {:ok, company} = Companies.ensure_company_from_idea(scope)
+    {:ok, [company]} = Companies.ensure_company_from_idea(scope, "Moja firma")
     company
   end
 end
