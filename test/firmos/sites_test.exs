@@ -139,6 +139,20 @@ defmodule Firmos.SitesTest do
     end
   end
 
+  describe "unsubscribe/2" do
+    test "stops the site updates", %{scope: scope, company: company} do
+      :ok = Sites.subscribe(scope, company)
+      :ok = Sites.unsubscribe(scope, company)
+      _site = request!(scope, company)
+
+      refute_received {:site_updated, _site}
+    end
+
+    test "refuses another owner's company", %{company: company} do
+      assert_raise FunctionClauseError, fn -> Sites.unsubscribe(user_scope_fixture(), company) end
+    end
+  end
+
   describe "generate_site/3" do
     test "sends a Polish prompt from the company and its plan with a strict-JSON system prompt",
          %{scope: scope, company: company} do
