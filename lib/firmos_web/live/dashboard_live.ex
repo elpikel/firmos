@@ -2,10 +2,14 @@ defmodule FirmosWeb.DashboardLive do
   @moduledoc """
   The signed-in owner's landing page. Lives in the `:require_authenticated_user`
   live_session, so `@current_scope.user` is always present here.
+
+  Shows the owner's newest company and the state of its business plan, kept
+  live through `Firmos.Plans.subscribe/2` while it generates in the background.
   """
   use FirmosWeb, :live_view
 
   alias Firmos.Companies
+  alias Firmos.Plans
 
   require Logger
 
@@ -13,11 +17,28 @@ defmodule FirmosWeb.DashboardLive do
   def mount(_params, _session, socket) do
     scope = socket.assigns.current_scope
     ensure_company_from_idea(scope)
+    company = Companies.latest_company(scope)
+
+    if company && connected?(socket) do
+      :ok = Plans.subscribe(scope, company)
+    end
 
     {:ok,
      socket
      |> assign(:page_title, gettext("Dashboard"))
-     |> assign(:company, Companies.latest_company(scope))}
+     |> assign(:company, company)
+     |> assign_plan()}
+  end
+
+  @impl true
+  def handle_info({:plan_updated, %{company_id: id}}, %{assigns: %{company: %{id: id}}} = socket) do
+    {:noreply, assign_plan(socket)}
+  end
+
+  defp assign_plan(%{assigns: %{company: nil}} = socket), do: assign(socket, :plan, nil)
+
+  defp assign_plan(%{assigns: %{current_scope: scope, company: company}} = socket) do
+    assign(socket, :plan, Plans.current_plan(scope, company))
   end
 
   # Runs on both the dead and the connected mount; the context makes it
@@ -37,6 +58,45 @@ defmodule FirmosWeb.DashboardLive do
             "invalid fields: #{inspect(invalid_fields)}"
         )
     end
+  end
+
+  # A stalled plan shows as failed, so the owner goes and tries again.
+  defp plan_state(plan) do
+    cond do
+      plan.status == :ready -> :ready
+      plan.status == :failed or Plans.stalled?(plan) -> :failed
+      true -> :in_progress
+    end
+  end
+
+  attr :plan, Firmos.Plans.Plan, required: true
+
+  defp plan_status(assigns) do
+    ~H"""
+    <div id="plan-status" data-status={@plan.status} class="border-t border-zinc-100 pt-4">
+      <%= case plan_state(@plan) do %>
+        <% :in_progress -> %>
+          <p id="plan-progress" role="status" class="flex items-center gap-2 text-sm text-zinc-600">
+            <span class="relative flex size-2.5">
+              <span class="absolute inline-flex size-full animate-ping rounded-full bg-amber-400 opacity-75">
+              </span>
+              <span class="relative inline-flex size-2.5 rounded-full bg-amber-500"></span>
+            </span>
+            {gettext("AI is preparing your business plan...")}
+          </p>
+        <% :ready -> %>
+          <p id="plan-ready" class="flex items-center gap-2 text-sm text-zinc-600">
+            <.icon name="hero-check-circle" class="size-5 text-emerald-600" />
+            {gettext("Your business plan is ready.")}
+          </p>
+        <% :failed -> %>
+          <p id="plan-failed" class="flex items-center gap-2 text-sm text-red-700">
+            <.icon name="hero-exclamation-triangle" class="size-5" />
+            {gettext("We couldn't generate your business plan. Open it to try again.")}
+          </p>
+      <% end %>
+    </div>
+    """
   end
 
   @impl true
@@ -65,7 +125,15 @@ defmodule FirmosWeb.DashboardLive do
                 {@company.name}
               </h2>
             </div>
-            <div class="flex shrink-0 items-center gap-2">
+            <div class="flex shrink-0 flex-wrap items-center justify-end gap-2">
+              <.link
+                id="company-plan-link"
+                navigate={~p"/companies/#{@company.id}/plan"}
+                class="inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 px-3 py-1.5 text-sm font-medium text-zinc-700 transition hover:border-zinc-300 hover:bg-zinc-50"
+              >
+                <.icon name="hero-document-text" class="size-4" />
+                {gettext("Business plan")}
+              </.link>
               <.link
                 id="company-activity-link"
                 navigate={~p"/companies/#{@company.id}/activity"}
@@ -91,6 +159,7 @@ defmodule FirmosWeb.DashboardLive do
           >
             {@company.description}
           </p>
+          <.plan_status :if={@plan} plan={@plan} />
         </article>
 
         <div

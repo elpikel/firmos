@@ -38,6 +38,10 @@ config :firmos, Firmos.AI.Claude,
   retry: false,
   req_options: [plug: {Req.Test, Firmos.AI.Claude}]
 
+# Jobs are only inserted; tests run them with Oban.Testing / drain_queue in
+# the test process (so Mox expectations apply).
+config :firmos, Oban, testing: :manual
+
 # Print only warnings and errors during test
 config :logger, level: :warning
 
