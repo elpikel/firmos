@@ -35,3 +35,6 @@ firmos-*.tar
 npm-debug.log
 /assets/node_modules/
 
+
+# Claude Code personal settings.
+/.claude/settings.local.json
