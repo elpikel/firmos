@@ -24,6 +24,10 @@ config :firmos,
   ecto_repos: [Firmos.Repo],
   generators: [timestamp_type: :utc_datetime]
 
+# The UI is Polish-first. English msgids stay the source, so any message
+# without a Polish translation falls back to English.
+config :firmos, FirmosWeb.Gettext, default_locale: "pl"
+
 # Configure the endpoint
 config :firmos, FirmosWeb.Endpoint,
   url: [host: "localhost"],

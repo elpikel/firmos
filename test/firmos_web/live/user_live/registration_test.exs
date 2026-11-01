@@ -8,8 +8,8 @@ defmodule FirmosWeb.UserLive.RegistrationTest do
     test "renders registration page", %{conn: conn} do
       {:ok, _lv, html} = live(conn, ~p"/users/register")
 
-      assert html =~ "Register"
-      assert html =~ "Log in"
+      assert html =~ "Utwórz konto"
+      assert html =~ "Zaloguj się"
     end
 
     test "redirects if already logged in", %{conn: conn} do
@@ -30,8 +30,8 @@ defmodule FirmosWeb.UserLive.RegistrationTest do
         |> element("#registration_form")
         |> render_change(user: %{"email" => "with spaces"})
 
-      assert result =~ "Register"
-      assert result =~ "must have the @ sign and no spaces"
+      assert result =~ "Utwórz konto"
+      assert result =~ "musi zawierać znak @ i nie może zawierać spacji"
     end
   end
 
@@ -47,7 +47,7 @@ defmodule FirmosWeb.UserLive.RegistrationTest do
         |> follow_redirect(conn, ~p"/users/log-in")
 
       assert html =~
-               ~r/An email was sent to .*, please access it to confirm your account/
+               ~r/Wysłaliśmy wiadomość na adres .*\. Otwórz ją, aby potwierdzić konto/
     end
 
     test "renders errors for duplicated email", %{conn: conn} do
@@ -62,7 +62,7 @@ defmodule FirmosWeb.UserLive.RegistrationTest do
         )
         |> render_submit()
 
-      assert result =~ "has already been taken"
+      assert result =~ "jest już zajęte"
     end
   end
 
@@ -72,11 +72,11 @@ defmodule FirmosWeb.UserLive.RegistrationTest do
 
       {:ok, _login_live, login_html} =
         lv
-        |> element("main a", "Log in")
+        |> element("main a", "Zaloguj się")
         |> render_click()
         |> follow_redirect(conn, ~p"/users/log-in")
 
-      assert login_html =~ "Log in"
+      assert login_html =~ "Zaloguj się"
     end
   end
 end

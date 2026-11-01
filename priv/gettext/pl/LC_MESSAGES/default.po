@@ -1,0 +1,336 @@
+## "msgid"s in this file come from POT (.pot) files.
+###
+### Do not add, change, or remove "msgid"s manually here as
+### they're tied to the ones in the corresponding POT file
+### (with the same domain).
+###
+### Use "mix gettext.extract --merge" or "mix gettext.merge"
+### to merge POT files into PO files.
+msgid ""
+msgstr ""
+"Language: pl\n"
+"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10||n%100>=20) ? 1 : 2);\n"
+
+#: lib/firmos_web/components/core_components.ex:368
+#, elixir-autogen, elixir-format
+msgid "Actions"
+msgstr "Akcje"
+
+#: lib/firmos_web/components/layouts.ex:87
+#: lib/firmos_web/components/layouts.ex:99
+#, elixir-autogen, elixir-format
+msgid "Attempting to reconnect"
+msgstr "Próba ponownego połączenia"
+
+#: lib/firmos_web/components/layouts/root.html.heex:47
+#: lib/firmos_web/live/dashboard_live.ex:10
+#: lib/firmos_web/live/dashboard_live.ex:19
+#, elixir-autogen, elixir-format
+msgid "Dashboard"
+msgstr "Panel"
+
+#: lib/firmos_web/components/layouts/root.html.heex:81
+#: lib/firmos_web/live/user_live/confirmation.ex:53
+#: lib/firmos_web/live/user_live/login.ex:13
+#: lib/firmos_web/live/user_live/registration.ex:18
+#, elixir-autogen, elixir-format
+msgid "Log in"
+msgstr "Zaloguj się"
+
+#: lib/firmos_web/components/layouts/root.html.heex:64
+#, elixir-autogen, elixir-format
+msgid "Log out"
+msgstr "Wyloguj się"
+
+#: lib/firmos_web/live/dashboard_live.ex:32
+#, elixir-autogen, elixir-format
+msgid "Nothing here yet"
+msgstr "Na razie nic tu nie ma"
+
+#: lib/firmos_web/components/layouts/root.html.heex:73
+#, elixir-autogen, elixir-format
+msgid "Register"
+msgstr "Zarejestruj się"
+
+#: lib/firmos_web/components/layouts/root.html.heex:55
+#, elixir-autogen, elixir-format
+msgid "Settings"
+msgstr "Ustawienia"
+
+#: lib/firmos_web/components/layouts.ex:94
+#, elixir-autogen, elixir-format
+msgid "Something went wrong!"
+msgstr "Coś poszło nie tak!"
+
+#: lib/firmos_web/components/layouts.ex:82
+#, elixir-autogen, elixir-format
+msgid "We can't find the internet"
+msgstr "Brak połączenia z internetem"
+
+#: lib/firmos_web/live/dashboard_live.ex:21
+#: lib/firmos_web/live/user_live/confirmation.ex:12
+#, elixir-autogen, elixir-format
+msgid "Welcome, %{email}"
+msgstr "Witaj, %{email}"
+
+#: lib/firmos_web/live/dashboard_live.ex:34
+#, elixir-autogen, elixir-format
+msgid "Your firm's activity will show up here once you start using Firmos."
+msgstr "Tu pojawi się aktywność Twojej firmy, gdy zaczniesz korzystać z Firmos."
+
+#: lib/firmos_web/components/core_components.ex:74
+#, elixir-autogen, elixir-format
+msgid "close"
+msgstr "zamknij"
+
+#: lib/firmos_web/live/user_live/settings.ex:129
+#, elixir-autogen, elixir-format
+msgid "A link to confirm your email change has been sent to the new address."
+msgstr "Link potwierdzający zmianę adresu e-mail został wysłany na nowy adres."
+
+#: lib/firmos_web/live/user_live/settings.ex:14
+#, elixir-autogen, elixir-format
+msgid "Account Settings"
+msgstr "Ustawienia konta"
+
+#: lib/firmos_web/live/user_live/registration.ex:16
+#, elixir-autogen, elixir-format
+msgid "Already registered?"
+msgstr "Masz już konto?"
+
+#: lib/firmos_web/controllers/page_html/home.html.heex:6
+#, elixir-autogen, elixir-format
+msgid "An AI team that runs your small business."
+msgstr "Zespół AI, który prowadzi Twoją małą firmę."
+
+#: lib/firmos_web/live/user_live/registration.ex:70
+#, elixir-autogen, elixir-format
+msgid "An email was sent to %{email}, please access it to confirm your account."
+msgstr "Wysłaliśmy wiadomość na adres %{email}. Otwórz ją, aby potwierdzić konto."
+
+#: lib/firmos_web/live/user_live/settings.ex:29
+#, elixir-autogen, elixir-format
+msgid "Change Email"
+msgstr "Zmień e-mail"
+
+#: lib/firmos_web/live/user_live/settings.ex:28
+#, elixir-autogen, elixir-format
+msgid "Changing..."
+msgstr "Zmieniam..."
+
+#: lib/firmos_web/live/user_live/confirmation.ex:37
+#, elixir-autogen, elixir-format
+msgid "Confirm and log in only this time"
+msgstr "Potwierdź i zaloguj tylko tym razem"
+
+#: lib/firmos_web/live/user_live/confirmation.ex:31
+#, elixir-autogen, elixir-format
+msgid "Confirm and stay logged in"
+msgstr "Potwierdź i nie wylogowuj mnie"
+
+#: lib/firmos_web/live/user_live/settings.ex:62
+#, elixir-autogen, elixir-format
+msgid "Confirm new password"
+msgstr "Potwierdź nowe hasło"
+
+#: lib/firmos_web/live/user_live/confirmation.ex:28
+#: lib/firmos_web/live/user_live/confirmation.ex:34
+#, elixir-autogen, elixir-format
+msgid "Confirming..."
+msgstr "Potwierdzam..."
+
+#: lib/firmos_web/live/user_live/registration.ex:36
+#, elixir-autogen, elixir-format
+msgid "Create an account"
+msgstr "Załóż konto"
+
+#: lib/firmos_web/live/user_live/registration.ex:35
+#, elixir-autogen, elixir-format
+msgid "Creating account..."
+msgstr "Zakładam konto..."
+
+#: lib/firmos_web/live/user_live/login.ex:18
+#, elixir-autogen, elixir-format
+msgid "Don't have an account?"
+msgstr "Nie masz konta?"
+
+#: lib/firmos_web/live/user_live/login.ex:52
+#: lib/firmos_web/live/user_live/login.ex:77
+#: lib/firmos_web/live/user_live/registration.ex:28
+#: lib/firmos_web/live/user_live/settings.ex:23
+#, elixir-autogen, elixir-format
+msgid "Email"
+msgstr "E-mail"
+
+#: lib/firmos_web/live/user_live/settings.ex:82
+#, elixir-autogen, elixir-format
+msgid "Email change link is invalid or it has expired."
+msgstr "Link do zmiany adresu e-mail jest nieprawidłowy lub wygasł."
+
+#: lib/firmos_web/live/user_live/settings.ex:79
+#, elixir-autogen, elixir-format
+msgid "Email changed successfully."
+msgstr "Adres e-mail został zmieniony."
+
+#: lib/firmos_web/controllers/page_html/home.html.heex:28
+#, elixir-autogen, elixir-format
+msgid "Get started"
+msgstr "Zacznij teraz"
+
+#: lib/firmos_web/controllers/page_html/home.html.heex:20
+#, elixir-autogen, elixir-format
+msgid "Go to dashboard"
+msgstr "Przejdź do panelu"
+
+#: lib/firmos_web/live/user_live/login.ex:126
+#, elixir-autogen, elixir-format
+msgid "If your email is in our system, you will receive instructions for logging in shortly."
+msgstr "Jeśli Twój adres e-mail jest w naszym systemie, wkrótce otrzymasz instrukcje logowania."
+
+#: lib/firmos_web/controllers/user_session_controller.ex:43
+#, elixir-autogen, elixir-format
+msgid "Invalid email or password"
+msgstr "Nieprawidłowy e-mail lub hasło"
+
+#: lib/firmos_web/live/user_live/confirmation.ex:62
+#, elixir-autogen, elixir-format
+msgid "Keep me logged in on this device"
+msgstr "Nie wylogowuj mnie na tym urządzeniu"
+
+#: lib/firmos_web/live/user_live/login.ex:90
+#, elixir-autogen, elixir-format
+msgid "Log in and stay logged in"
+msgstr "Zaloguj się i nie wylogowuj mnie"
+
+#: lib/firmos_web/live/user_live/login.ex:93
+#, elixir-autogen, elixir-format
+msgid "Log in only this time"
+msgstr "Zaloguj tylko tym razem"
+
+#: lib/firmos_web/live/user_live/login.ex:59
+#, elixir-autogen, elixir-format
+msgid "Log in with email"
+msgstr "Zaloguj się e-mailem"
+
+#: lib/firmos_web/live/user_live/confirmation.ex:68
+#, elixir-autogen, elixir-format
+msgid "Log me in only this time"
+msgstr "Zaloguj mnie tylko tym razem"
+
+#: lib/firmos_web/controllers/user_session_controller.ex:64
+#, elixir-autogen, elixir-format
+msgid "Logged out successfully."
+msgstr "Wylogowano."
+
+#: lib/firmos_web/live/user_live/confirmation.ex:52
+#: lib/firmos_web/live/user_live/confirmation.ex:59
+#: lib/firmos_web/live/user_live/confirmation.ex:65
+#, elixir-autogen, elixir-format
+msgid "Logging in..."
+msgstr "Loguję..."
+
+#: lib/firmos_web/live/user_live/confirmation.ex:91
+#, elixir-autogen, elixir-format
+msgid "Magic link is invalid or it has expired."
+msgstr "Link logowania jest nieprawidłowy lub wygasł."
+
+#: lib/firmos_web/live/user_live/settings.ex:15
+#, elixir-autogen, elixir-format
+msgid "Manage your account email address and password settings"
+msgstr "Zarządzaj adresem e-mail i hasłem do konta"
+
+#: lib/firmos_web/live/user_live/settings.ex:54
+#, elixir-autogen, elixir-format
+msgid "New password"
+msgstr "Nowe hasło"
+
+#: lib/firmos_web/live/user_live/login.ex:85
+#, elixir-autogen, elixir-format
+msgid "Password"
+msgstr "Hasło"
+
+#: lib/firmos_web/controllers/user_session_controller.ex:59
+#, elixir-autogen, elixir-format
+msgid "Password updated successfully!"
+msgstr "Hasło zostało zmienione!"
+
+#: lib/firmos_web/live/user_live/registration.ex:14
+#, elixir-autogen, elixir-format
+msgid "Register for an account"
+msgstr "Utwórz konto"
+
+#: lib/firmos_web/live/user_live/settings.ex:67
+#, elixir-autogen, elixir-format
+msgid "Save Password"
+msgstr "Zapisz hasło"
+
+#: lib/firmos_web/live/user_live/settings.ex:66
+#, elixir-autogen, elixir-format
+msgid "Saving..."
+msgstr "Zapisuję..."
+
+#: lib/firmos_web/live/user_live/login.ex:23
+#, elixir-autogen, elixir-format
+msgid "Sign up"
+msgstr "Zarejestruj się"
+
+#: lib/firmos_web/controllers/user_session_controller.ex:27
+#, elixir-autogen, elixir-format
+msgid "The link is invalid or it has expired."
+msgstr "Link jest nieprawidłowy lub wygasł."
+
+#: lib/firmos_web/live/user_live/confirmation.ex:74
+#, elixir-autogen, elixir-format
+msgid "Tip: If you prefer passwords, you can enable them in the user settings."
+msgstr "Wskazówka: jeśli wolisz logować się hasłem, możesz je włączyć w ustawieniach konta."
+
+#: lib/firmos_web/live/user_live/login.ex:35
+#, elixir-autogen, elixir-format
+msgid "To see sent emails, visit"
+msgstr "Wysłane wiadomości zobaczysz na"
+
+#: lib/firmos_web/controllers/user_session_controller.ex:8
+#, elixir-autogen, elixir-format
+msgid "User confirmed successfully."
+msgstr "Konto zostało potwierdzone."
+
+#: lib/firmos_web/controllers/user_session_controller.ex:12
+#, elixir-autogen, elixir-format
+msgid "Welcome back!"
+msgstr "Witaj ponownie!"
+
+#: lib/firmos_web/live/user_live/login.ex:33
+#, elixir-autogen, elixir-format
+msgid "You are running the local mail adapter."
+msgstr "Używasz lokalnego adaptera poczty."
+
+#: lib/firmos_web/user_auth.ex:228
+#: lib/firmos_web/user_auth.ex:280
+#, elixir-autogen, elixir-format
+msgid "You must log in to access this page."
+msgstr "Zaloguj się, aby zobaczyć tę stronę."
+
+#: lib/firmos_web/user_auth.ex:245
+#, elixir-autogen, elixir-format
+msgid "You must re-authenticate to access this page."
+msgstr "Zaloguj się ponownie, aby zobaczyć tę stronę."
+
+#: lib/firmos_web/live/user_live/login.ex:16
+#, elixir-autogen, elixir-format
+msgid "You need to reauthenticate to perform sensitive actions on your account."
+msgstr "Aby wykonać wrażliwe operacje na koncie, zaloguj się ponownie."
+
+#: lib/firmos_web/controllers/page_html/home.html.heex:9
+#, elixir-autogen, elixir-format
+msgid "You set the direction. Firmos agents build your website, look after your customers and report back every morning."
+msgstr "Ty wyznaczasz kierunek. Agenci Firmos budują Twoją stronę, dbają o klientów i co rano zdają raport."
+
+#: lib/firmos_web/live/user_live/login.ex:63
+#, elixir-autogen, elixir-format
+msgid "or"
+msgstr "lub"
+
+#: lib/firmos_web/live/user_live/login.ex:36
+#, elixir-autogen, elixir-format
+msgid "the mailbox page"
+msgstr "stronie skrzynki pocztowej"

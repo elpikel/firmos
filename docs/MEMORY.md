@@ -10,3 +10,4 @@ Dated decisions log, one line each, with the why.
 - **2026-11-01** (#7): Auth is `mix phx.gen.auth Accounts User users --live`. Magic link is the primary flow and the generator's optional password is kept, because that means less custom code; "owner" is a role in the docs, not a table name.
 - **2026-11-01** (#7): `/dashboard` ships as a placeholder LiveView (T2 after gen-auth T1), because AC2/AC4 need a protected landing page before M1 fills it.
 - **2026-11-01** (#7): Auth tables keep phx.gen.auth's `timestamp` (utc_datetime) columns, not timestamptz, because the token expiry queries compare against `ago/2` (a timestamp param); timestamptz would make expiry depend on the DB session time zone.
+- **2026-11-01** (#12): Polish is the Gettext backend's `default_locale`, not a per-request locale plug, because a language switcher is out of scope; EN msgids stay the source so untranslated copy falls back to English instead of raising.

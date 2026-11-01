@@ -337,7 +337,7 @@ defmodule FirmosWeb.UserAuthTest do
       assert redirected_to(conn) == ~p"/users/log-in"
 
       assert Phoenix.Flash.get(conn.assigns.flash, :error) ==
-               "You must log in to access this page."
+               "Zaloguj się, aby zobaczyć tę stronę."
     end
 
     test "stores the path to redirect to on GET", %{conn: conn} do
