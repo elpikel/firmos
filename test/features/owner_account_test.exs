@@ -37,8 +37,6 @@ defmodule FirmosWeb.Features.OwnerAccountTest do
   # ---------------------------------------------------------------------
 
   describe "Scenario: AC1 — a visitor signs up with a valid email" do
-    @describetag :skip
-
     setup %{conn: conn} do
       email = unique_email()
       Map.put(register(conn, email), :email, email)
@@ -116,8 +114,6 @@ defmodule FirmosWeb.Features.OwnerAccountTest do
   # ---------------------------------------------------------------------
 
   describe "Scenario: AC3 — rejecting a malformed email on sign-up" do
-    @describetag :skip
-
     setup %{conn: conn} do
       {:ok, view, _html} = live(conn, ~p"/users/register")
 
