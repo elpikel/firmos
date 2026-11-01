@@ -81,6 +81,16 @@ defmodule Firmos.Sites do
   end
 
   @doc """
+  Stops the caller's `subscribe/2` updates for the company's site (e.g. when
+  a page switches to another company). Raises `FunctionClauseError` for a
+  company the scope doesn't own.
+  """
+  @spec unsubscribe(%Scope{}, Company.t()) :: :ok
+  def unsubscribe(%Scope{user: %{id: user_id}}, %Company{id: company_id, user_id: user_id}) do
+    Phoenix.PubSub.unsubscribe(Firmos.PubSub, topic(company_id))
+  end
+
+  @doc """
   The company's site with its current version preloaded, or `nil` when the
   owner never asked for one.
   """
@@ -90,7 +100,8 @@ defmodule Firmos.Sites do
     |> join(:inner, [site: s], c in assoc(s, :company), as: :company)
     |> where([site: s], s.company_id == ^company_id)
     |> where([company: c], c.user_id == ^user_id)
-    |> preload(:current_version)
+    |> join(:left, [site: s], v in assoc(s, :current_version), as: :current_version)
+    |> preload([current_version: v], current_version: v)
     |> Repo.one()
   end
 

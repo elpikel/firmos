@@ -53,6 +53,16 @@ defmodule Firmos.Plans do
   end
 
   @doc """
+  Stops the caller's `subscribe/2` updates for the company's plans (e.g. when
+  a page switches to another company). Raises `FunctionClauseError` for a
+  company the scope doesn't own.
+  """
+  @spec unsubscribe(%Scope{}, Company.t()) :: :ok
+  def unsubscribe(%Scope{user: %{id: user_id}}, %Company{id: company_id, user_id: user_id}) do
+    Phoenix.PubSub.unsubscribe(Firmos.PubSub, topic(company_id))
+  end
+
+  @doc """
   Creates the company's first plan (pending version 1) and enqueues its
   generation. Meant to run inside the transaction that creates the company,
   so the job exists only if the company commits. Raises

@@ -64,8 +64,6 @@ defmodule FirmosWeb.Features.CompanyDashboardTest do
   # ---------------------------------------------------------------------
 
   describe "Scenario: AC1 — the owner opens the dashboard of a company with a plan and a published site" do
-    @describetag :skip
-
     setup :register_and_log_in_user
 
     setup %{conn: conn, scope: scope} do
@@ -135,8 +133,6 @@ defmodule FirmosWeb.Features.CompanyDashboardTest do
   end
 
   describe "Scenario: AC2 — an owner with two companies opens the dashboard" do
-    @describetag :skip
-
     setup :register_and_log_in_user
 
     setup %{conn: conn, scope: scope} do
@@ -156,8 +152,6 @@ defmodule FirmosWeb.Features.CompanyDashboardTest do
   end
 
   describe "Scenario: AC2 — the owner selects the other company" do
-    @describetag :skip
-
     setup :register_and_log_in_user
 
     setup %{conn: conn, scope: scope} do
@@ -187,8 +181,6 @@ defmodule FirmosWeb.Features.CompanyDashboardTest do
   end
 
   describe "Scenario: AC2 — the owner opens a company's dashboard by its address" do
-    @describetag :skip
-
     setup :register_and_log_in_user
 
     setup %{conn: conn, scope: scope} do
@@ -204,8 +196,6 @@ defmodule FirmosWeb.Features.CompanyDashboardTest do
   end
 
   describe "Scenario: AC2 — the selected company's plan finishes after a switch" do
-    @describetag :skip
-
     setup :register_and_log_in_user
 
     setup %{conn: conn, scope: scope} do
@@ -223,8 +213,6 @@ defmodule FirmosWeb.Features.CompanyDashboardTest do
   end
 
   describe "Scenario: AC2 — the previously shown company's plan finishes after a switch" do
-    @describetag :skip
-
     setup :register_and_log_in_user
 
     setup %{conn: conn, scope: scope} do
@@ -246,8 +234,6 @@ defmodule FirmosWeb.Features.CompanyDashboardTest do
   # ---------------------------------------------------------------------
 
   describe "Scenario: AC3 — an owner with no companies opens the dashboard" do
-    @describetag :skip
-
     setup :register_and_log_in_user
 
     setup %{conn: conn} do
@@ -269,8 +255,6 @@ defmodule FirmosWeb.Features.CompanyDashboardTest do
   end
 
   describe "Scenario: AC2 — rejecting another owner's company in the address" do
-    @describetag :skip
-
     setup :register_and_log_in_user
 
     setup %{scope: scope} do
@@ -286,8 +270,6 @@ defmodule FirmosWeb.Features.CompanyDashboardTest do
   end
 
   describe "Scenario: AC2 — rejecting a malformed company in the address" do
-    @describetag :skip
-
     setup :register_and_log_in_user
 
     setup %{scope: scope} do
@@ -300,15 +282,17 @@ defmodule FirmosWeb.Features.CompanyDashboardTest do
   end
 
   describe "Scenario: AC2 — rejecting a forged switch to another owner's company" do
-    @describetag :skip
-
     setup :register_and_log_in_user
 
     setup %{conn: conn, scope: scope} do
       _own = named_company(scope, "Piekarnia Zakwas")
       other_company = company_fixture(user_scope_fixture())
       {:ok, view, _html} = live(conn, ~p"/dashboard")
-      render_hook(view, "switch_company", %{"switcher" => %{"company" => other_company.id}})
+
+      render_hook(view, "switch_company", %{
+        "switcher" => %{"company" => to_string(other_company.id)}
+      })
+
       %{view: view}
     end
 

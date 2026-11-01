@@ -144,6 +144,20 @@ defmodule Firmos.PlansTest do
     end
   end
 
+  describe "unsubscribe/2" do
+    test "stops the plan updates", %{scope: scope, company: company, plan: plan} do
+      :ok = Plans.subscribe(scope, company)
+      :ok = Plans.unsubscribe(scope, company)
+      {:ok, _ready} = generate(plan, {:ok, plan_json()})
+
+      refute_received {:plan_updated, _plan}
+    end
+
+    test "refuses another owner's company", %{company: company} do
+      assert_raise FunctionClauseError, fn -> Plans.unsubscribe(user_scope_fixture(), company) end
+    end
+  end
+
   describe "rate_plan/3" do
     test "refuses a plan that isn't ready", %{plan: plan, scope: scope} do
       assert {:error, :not_ready} = Plans.rate_plan(scope, plan, :up)
